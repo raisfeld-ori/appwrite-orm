@@ -29,6 +29,10 @@ jobs:
       run: npm test
       env:
         CI: true
+        APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
+        APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
+        APPWRITE_DATABASE_ID: ${{ secrets.APPWRITE_DATABASE_ID }}
+        APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         
     - name: Run build
       run: npm run build
