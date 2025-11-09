@@ -83,4 +83,4 @@ Idk fully for now, cause I still haven't thought about where to take this packag
 
 ## License
 
-MIT License - see [https://github.com/raisfeld-ori/appwrite-orm/blob/main/LICENSE](LICENSE) file for details.
+MIT License - see [https://github.com/raisfeld-ori/appwrite-orm/blob/main/LICENSE](LICENSE) for details.

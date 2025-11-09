@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "A TypeScript ORM package for Appwrite with web and server support",
   "main": "dist/index.js",
-  "readme": "README.md",
+  "readme": "https://appwrite-orm.readthedocs.io",
+  "homepage": "https://appwrite-orm.readthedocs.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/raisfeld-ori/appwrite-orm"
