@@ -1,6 +1,6 @@
 {
   "name": "appwrite-orm",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "A TypeScript ORM package for Appwrite with web and server support",
   "main": "dist/index.js",
   "readme": "https://appwrite-orm.readthedocs.io",
@@ -33,6 +33,7 @@
     "test:watch": "jest --watch",
     "dev": "tsc --watch",
     "prepublishOnly": "npm run build",
+    "publish": "npm publish --access public && release-it",
     "docs:serve": "mkdocs serve",
     "docs:build": "mkdocs build",
     "docs:deploy": "mkdocs gh-deploy"
@@ -52,7 +53,8 @@
     "dotenv": "^17.2.3",
     "jest": "^29.5.0",
     "ts-jest": "^29.1.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "release-it": "19.0.6"
   },
   "dependencies": {
     "appwrite": ">=13.0.0"
