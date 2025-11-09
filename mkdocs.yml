@@ -1,0 +1,90 @@
+site_name: Appwrite ORM Documentation
+site_description: A TypeScript ORM package for Appwrite with web and server support
+site_author: Ori Raisfeld
+site_url: https://appwrite-orm.readthedocs.io/
+
+repo_name: appwrite-orm
+repo_url: https://github.com/your-username/appwrite-orm
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
+    - Configuration: getting-started/configuration.md
+  - API Reference:
+    - Overview: api/overview.md
+    - Shared Types: api/shared-types.md
+    - Web ORM: api/web-orm.md
+    - Server ORM: api/server-orm.md
+    - Table Operations: api/table-operations.md
+    - Validation: api/validation.md
+    - Migration: api/migration.md
+  - Guides:
+    - Schema Definition: guides/schema-definition.md
+    - Querying Data: guides/querying-data.md
+    - Data Validation: guides/data-validation.md
+    - Error Handling: guides/error-handling.md
+    - Testing: guides/testing.md
+  - Examples:
+    - Basic Usage: examples/basic-usage.md
+    - Advanced Queries: examples/advanced-queries.md
+    - Migration Examples: examples/migration-examples.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/your-username/appwrite-orm
+    - icon: fontawesome/brands/npm
+      link: https://www.npmjs.com/package/appwrite-orm

@@ -3,6 +3,11 @@
   "version": "0.0.1",
   "description": "A TypeScript ORM package for Appwrite with web and server support",
   "main": "dist/index.js",
+  "readme": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raisfeld-ori/appwrite-orm"
+  },
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -26,7 +31,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "dev": "tsc --watch",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "docs:serve": "mkdocs serve",
+    "docs:build": "mkdocs build",
+    "docs:deploy": "mkdocs gh-deploy"
   },
   "keywords": [
     "appwrite",

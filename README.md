@@ -78,9 +78,9 @@ Idk fully for now, cause I still haven't thought about where to take this packag
 
 1. More types for objects: I want to add support for things like the type domain or the type regex
 2. Better sample mock data: Appwrite makes really bad mock data (assumes all 255 strings are names, keeps a lot of things null). I'd like to make some system for this
-3. Better error handling: When appwrite throws an error it takes wayyy too long to figure out what happend. I'd like to make it easier
-4. Better query support: The appwrite query system is fine. But I'd really like a system like SQLAlchemy where I can just pick a table and filter it with pre-set filters
+3. Caching: redis has no caching, and on top of it- it's so difficult to implement redis into their nextjs servers that it's not worth it. I know it's not standard for an ORM to have caching but I want to find a way
+4. Free database: appwrite is 100% open source and *can* be self hosted, but it's very difficult. Currently I am just using my paid appwrite account, but in the future I plan on making a configuration for this project that uses SQLite or a minimal version of appwrite to make a free database
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see [https://github.com/raisfeld-ori/appwrite-orm/blob/main/LICENSE](LICENSE) file for details.

@@ -1,0 +1,85 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ServerORMInstance = void 0;
+const table_1 = require("./table");
+class ServerORMInstance {
+    constructor(databases, databaseId, schemas) {
+        this.databases = databases;
+        this.databaseId = databaseId;
+        this.schemas = schemas;
+        this.tables = new Map();
+        // Initialize table instances
+        for (const [name, schema] of schemas.entries()) {
+            const table = new table_1.ServerTable(databases, databaseId, name, schema);
+            this.tables.set(name, table);
+        }
+    }
+    /**
+     * Get a table instance by name (similar to SQLAlchemy's table access)
+     */
+    table(name) {
+        const table = this.tables.get(name);
+        if (!table) {
+            throw new Error(`Table ${name} not found`);
+        }
+        return table;
+    }
+    /**
+     * Legacy method - Create a new document
+     * @deprecated Use table(name).create() instead
+     */
+    async create(collection, data) {
+        return this.table(collection).create(data);
+    }
+    /**
+     * Legacy method - Update a document
+     * @deprecated Use table(name).update() instead
+     */
+    async update(collection, documentId, data) {
+        return this.table(collection).update(documentId, data);
+    }
+    /**
+     * Legacy method - Get a document by ID
+     * @deprecated Use table(name).get() instead
+     */
+    async get(collection, documentId) {
+        return this.table(collection).get(documentId);
+    }
+    /**
+     * Legacy method - List documents with optional queries
+     * @deprecated Use table(name).query() or table(name).all() instead
+     */
+    async list(collection, queries) {
+        if (queries) {
+            const documents = await this.table(collection).find(queries);
+            return { documents, total: documents.length };
+        }
+        else {
+            const documents = await this.table(collection).all();
+            return { documents, total: documents.length };
+        }
+    }
+    /**
+     * Legacy method - Delete a document
+     * @deprecated Use table(name).delete() instead
+     */
+    async delete(collection, documentId) {
+        return this.table(collection).delete(documentId);
+    }
+    /**
+     * Legacy method - Create a new collection (server-only feature)
+     * @deprecated Use table(name).createCollection() instead
+     */
+    async createCollection(collectionId, name, permissions) {
+        return this.table(collectionId).createCollection(name, permissions);
+    }
+    /**
+     * Legacy method - Delete a collection (server-only feature)
+     * @deprecated Use table(name).deleteCollection() instead
+     */
+    async deleteCollection(collectionId) {
+        return this.table(collectionId).deleteCollection();
+    }
+}
+exports.ServerORMInstance = ServerORMInstance;
+//# sourceMappingURL=orm-instance.js.map
