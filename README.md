@@ -8,62 +8,6 @@ A TypeScript ORM package for Appwrite with separate web and server implementatio
 npm install appwrite-orm appwrite
 ```
 
-## Configuration
-
-### Required Configuration Values
-
-All configuration values (`endpoint`, `projectId`, `databaseId`) are now mandatory and will be validated:
-
-```typescript
-import { WebORM, ServerORM } from 'appwrite-orm';
-
-// ✓ Valid configuration
-const config = {
-  endpoint: 'https://cloud.appwrite.io/v1',
-  projectId: 'your-project-id',
-  databaseId: 'your-database-id'
-};
-
-// ✗ Will throw error for missing values
-const invalidConfig = {
-  endpoint: '',  // Empty string not allowed
-  projectId: 'your-project-id',
-  databaseId: 'your-database-id'
-};
-```
-
-### Environment Variables
-
-Use environment variables for configuration (recommended):
-
-```typescript
-// Create a .env file
-APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
-APPWRITE_PROJECT_ID=your-project-id
-APPWRITE_DATABASE_ID=your-database-id
-APPWRITE_API_KEY=your-api-key-for-server
-
-// Use in your code
-const config = {
-  endpoint: process.env.APPWRITE_ENDPOINT!,
-  projectId: process.env.APPWRITE_PROJECT_ID!,
-  databaseId: process.env.APPWRITE_DATABASE_ID!,
-  apiKey: process.env.APPWRITE_API_KEY // Server only
-};
-```
-
-### Testing with dotenv
-
-The package includes dotenv support for tests. Create a `.env.test` file for test-specific values:
-
-```bash
-# .env.test
-APPWRITE_ENDPOINT=https://test.appwrite.io/v1
-APPWRITE_PROJECT_ID=test-project-id
-APPWRITE_DATABASE_ID=test-database-id
-APPWRITE_API_KEY=test-api-key
-```
-
 ## Usage
 
 ```typescript
@@ -102,20 +46,6 @@ The ORM has now activated! On web this will autometically validate you database
 and throw an error if there's a difference between your schema and the database.
 On nodejs this will create a new database if it doesn't exist and validate the schema.
 If the schema is different AND autoMigrate is true, then it will modify the database to fit.
-
-## CI/CD & Testing
-
-This package includes comprehensive GitHub Actions workflows for automated testing and releases:
-
-### Automated Testing
-- **Pull Request Checks**: Runs tests, builds, type checking, and security audits on every PR
-- **Continuous Integration**: Tests against Node.js versions 18.x, 20.x, and 22.x
-- **Security Auditing**: Automatically checks for vulnerabilities in dependencies
-
-### Release Automation
-- **Automated Publishing**: Publishes to NPM when a new GitHub release is created
-- **Release Assets**: Automatically creates and uploads build artifacts
-- **Multi-Node Testing**: Ensures compatibility across supported Node.js versions
 
 ### Running Tests Locally
 ```bash
