@@ -81,6 +81,10 @@ Idk fully for now, cause I still haven't thought about where to take this packag
 3. Caching: redis has no caching, and on top of it- it's so difficult to implement redis into their nextjs servers that it's not worth it. I know it's not standard for an ORM to have caching but I want to find a way
 4. Free database: appwrite is 100% open source and *can* be self hosted, but it's very difficult. Currently I am just using my paid appwrite account, but in the future I plan on making a configuration for this project that uses SQLite or a minimal version of appwrite to make a free database
 
+## RELEASE NOTES
+
+This is the initial version of the package. In the future you will find explanations here
+
 ## License
 
 MIT License - see [https://github.com/raisfeld-ori/appwrite-orm/blob/main/LICENSE](LICENSE) for details.
