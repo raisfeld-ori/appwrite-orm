@@ -62,21 +62,22 @@ describe('ORM Integration Tests', () => {
   });
 
   describe('WebORM', () => {
-    it('should initialize without errors with valid config', () => {
-      const orm = new WebORM(testConfig);
-      const instance = orm.init([testDatabase]);
+    it('should initialize without errors with valid config', async () => {
+      const orm = new WebORM({ ...testConfig, autoValidate: false });
+      const instance = await orm.init([testDatabase]);
       expect(instance).toBeDefined();
     });
 
-    it('should initialize with environment variables', () => {
+    it('should initialize with environment variables', async () => {
       // This test will use actual env vars if available, fallback to test values
       const orm = new WebORM({
         endpoint: process.env.APPWRITE_ENDPOINT || 'https://test.appwrite.io/v1',
         projectId: process.env.APPWRITE_PROJECT_ID || 'test-project-id',
-        databaseId: process.env.APPWRITE_DATABASE_ID || 'test-database-id'
+        databaseId: process.env.APPWRITE_DATABASE_ID || 'test-database-id',
+        autoValidate: false
       });
       
-      const instance = orm.init([testDatabase]);
+      const instance = await orm.init([testDatabase]);
       expect(instance).toBeDefined();
     });
   });

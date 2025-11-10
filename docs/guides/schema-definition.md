@@ -23,6 +23,61 @@ const userTable: TableDefinition = {
 };
 ```
 
+## Table Definition Properties
+
+### Collection ID vs Name
+
+The `TableDefinition` interface includes two important properties:
+
+- **`name`** (required): The human-readable name of your table/collection
+- **`id`** (optional): The collection ID used in Appwrite
+
+If you don't specify an `id`, the ORM automatically uses the `name` as the collection ID:
+
+```typescript
+// Without explicit ID - collection ID will be 'users'
+const userTable: TableDefinition = {
+  name: 'users',
+  schema: { /* ... */ }
+};
+
+// With explicit ID - collection ID will be 'user_collection'
+const userTable: TableDefinition = {
+  name: 'users',
+  id: 'user_collection',
+  schema: { /* ... */ }
+};
+```
+
+### When to Use Custom IDs
+
+Use custom collection IDs when:
+
+```typescript
+// 1. Migrating from an existing database with specific IDs
+const legacyUsers: TableDefinition = {
+  name: 'users',
+  id: 'legacy_users_v2', // Match existing collection ID
+  schema: { /* ... */ }
+};
+
+// 2. Using naming conventions or prefixes
+const userTable: TableDefinition = {
+  name: 'users',
+  id: 'prod_users', // Environment-specific prefix
+  schema: { /* ... */ }
+};
+
+// 3. Avoiding naming conflicts
+const adminUsers: TableDefinition = {
+  name: 'adminUsers',
+  id: 'admin_users_collection',
+  schema: { /* ... */ }
+};
+```
+
+**Best Practice**: For new projects, simply use the `name` property and let the ORM handle the collection ID automatically.
+
 ## Field Types
 
 ### String Fields

@@ -8,6 +8,7 @@ export class ServerORM {
   private databases: Databases;
   private config: ORMConfig;
   private schemas: Map<string, DatabaseSchema> = new Map();
+  private collectionIds: Map<string, string> = new Map(); // Map table name to collection ID
   private migration: Migration;
 
   constructor(config: ORMConfig) {
@@ -16,6 +17,16 @@ export class ServerORM {
     
     if (!config.apiKey) {
       throw new Error('API key is required for server-side ORM');
+    }
+
+    // Set autoValidate default to true
+    if (config.autoValidate === undefined) {
+      config.autoValidate = true;
+    }
+
+    // If autoMigrate is true, autoValidate must also be true
+    if (config.autoMigrate) {
+      config.autoValidate = true;
     }
 
     this.config = config;
@@ -41,16 +52,21 @@ export class ServerORM {
    * Initialize the ORM with table definitions and optional migration
    */
   async init<T extends TableDefinition[]>(tables: T): Promise<ServerORMInstance<T>> {
-    // Store schemas
+    // Store schemas and collection IDs
     tables.forEach(table => {
+      const collectionId = table.id || table.name;
       this.schemas.set(table.name, table.schema);
+      this.collectionIds.set(table.name, collectionId);
     });
 
     // Auto-migrate if enabled
     if (this.config.autoMigrate) {
       await this.migration.migrate(tables);
+    } else if (this.config.autoValidate) {
+      // Validate database structure if autoValidate is enabled
+      await this.migration.validate(tables);
     }
 
-    return new ServerORMInstance(this.databases, this.config.databaseId, this.schemas);
+    return new ServerORMInstance(this.databases, this.config.databaseId, this.schemas, this.collectionIds);
   }
 }

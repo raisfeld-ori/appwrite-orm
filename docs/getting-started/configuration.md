@@ -11,6 +11,7 @@ interface ORMConfig {
   databaseId: string;    // Target database ID
   apiKey?: string;       // Required for server-side operations
   autoMigrate?: boolean; // Server-only: auto-migrate schemas
+  autoValidate?: boolean; // Validate database structure on init (defaults to true)
 }
 ```
 
@@ -116,6 +117,42 @@ const config = {
 
 !!! warning "Production Warning"
     Auto-migration is not recommended for production environments. Use it only during development or with careful consideration.
+
+## Auto-Validation
+
+The `autoValidate` option controls automatic database structure validation during initialization. By default, `autoValidate` is set to `true`.
+
+```typescript
+const config = {
+  // ... other config
+  autoValidate: true  // Validate database structure on init (default)
+};
+```
+
+### Behavior
+
+- **Default**: `autoValidate` is automatically set to `true` if not specified
+- **With autoMigrate**: When `autoMigrate` is `true`, `autoValidate` is always `true` (validation happens after migration)
+- **Server-side**: Validates that all collections exist and have the required attributes defined in your schemas
+- **Web-side**: Validates that all collections exist in the database
+
+### When to Disable
+
+You may want to set `autoValidate` to `false` in scenarios where:
+
+```typescript
+const config = {
+  // ... other config
+  autoValidate: false  // Skip validation
+};
+```
+
+- You want faster initialization and are confident the database structure is correct
+- You're connecting to a database that's managed externally
+- You're using lazy initialization patterns
+
+!!! tip "Recommended Practice"
+    Keep `autoValidate` enabled during development to catch schema mismatches early. Consider disabling it in production only if you have other validation mechanisms in place.
 
 ## Testing Configuration
 

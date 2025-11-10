@@ -35,6 +35,7 @@ export interface DatabaseSchema {
 
 export interface TableDefinition<T extends DatabaseSchema = DatabaseSchema> {
   name: string;
+  id?: string; // Optional collection ID, defaults to name if not provided
   schema: T;
   role?: Record<string, any>; // Optional JSON role, defaults to public
 }
@@ -48,6 +49,7 @@ export interface ORMConfig {
   databaseId: string;
   apiKey?: string; // Only for server-side
   autoMigrate?: boolean; // Only for server-side
+  autoValidate?: boolean; // Validate database structure on init (defaults to true, always true if autoMigrate is true)
 }
 
 // Validation function for required config values

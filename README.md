@@ -1,6 +1,7 @@
 # Appwrite ORM
 
 A TypeScript ORM package for Appwrite with separate web and server implementations.
+For more documentation, go [read the docs](https://appwrite-orm.readthedocs.io)
 
 ## Installation
 
@@ -69,10 +70,6 @@ const webORM = new ServerORM(config);
 
 The server ORM will autometically validate your code, and will either throw an error or Migrate the table
 
----------------
-
-For more documentation, go [read the docs](https://appwrite-orm.readthedocs.io)
-
 ## Contributing
 
 1. Fork the repository
@@ -91,10 +88,6 @@ Idk fully for now, cause I still haven't thought about where to take this packag
 2. Better sample mock data: Appwrite makes really bad mock data (assumes all 255 strings are names, keeps a lot of things null). I'd like to make some system for this
 3. Caching: redis has no caching, and on top of it- it's so difficult to implement redis into their nextjs servers that it's not worth it. I know it's not standard for an ORM to have caching but I want to find a way
 4. Free database: appwrite is 100% open source and *can* be self hosted, but it's very difficult. Currently I am just using my paid appwrite account, but in the future I plan on making a configuration for this project that uses SQLite or a minimal version of appwrite to make a free database
-
-## RELEASE NOTES
-
-This is the initial version of the package. In the future you will find explanations here
 
 ## License
 

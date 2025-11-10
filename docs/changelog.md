@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`autoValidate` configuration option**: Automatically validates database structure on initialization (defaults to `true`)
+  - When `autoValidate` is `true`, the ORM validates that all collections and required attributes exist
+  - Always enabled when `autoMigrate` is `true`
+  - Helps catch schema mismatches early during development
+  - Can be disabled for faster initialization when schema is known to be correct
+- **Optional `id` field in `TableDefinition`**: Collection ID now defaults to the table name if not specified
+  - Simplifies table definitions for new projects
+  - Allows custom collection IDs when needed (e.g., legacy migrations, naming conventions)
+  - Backward compatible - existing code with explicit IDs continues to work
+- **Validation method in Migration class**: New `validate()` method checks database structure without modifying it
+  - Used by `autoValidate` feature to verify collections and attributes
+  - Provides detailed error messages about missing collections or attributes
+  - Available for both ServerORM and WebORM
 - Comprehensive documentation with MkDocs
 - Advanced query examples and patterns
 - Migration system documentation
@@ -15,6 +28,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Performance optimization patterns
 
 ### Changed
+- **`TableDefinition` interface**: Added optional `id?: string` property
+  - Default behavior: Uses `name` as collection ID if `id` is not provided
+  - Breaking change: None (fully backward compatible)
+- **`ORMConfig` interface**: Added `autoValidate?: boolean` property (defaults to `true`)
+  - Automatically set to `true` when `autoMigrate` is `true`
+  - Can be explicitly set to `false` to skip validation
+- **ServerORM initialization**: Now validates database structure when `autoValidate` is enabled
+  - Checks for missing collections and attributes before allowing queries
+  - Throws `ORMMigrationError` with details if validation fails
+- **WebORM initialization**: Now validates that collections exist when `autoValidate` is enabled
+  - Provides helpful error messages suggesting to create collections or use ServerORM with autoMigrate
+  - Method signature changed from synchronous to asynchronous (`init()` now returns a Promise)
 - Improved error handling with custom error types
 - Enhanced type safety across all modules
 - Better validation error messages

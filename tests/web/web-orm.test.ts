@@ -53,7 +53,7 @@ describe('WebORM', () => {
   let orm: WebORM;
   let ormInstance: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
     // Reset all mock functions
     Object.values(mockDatabasesInstance).forEach(mockFn => {
@@ -62,8 +62,8 @@ describe('WebORM', () => {
       }
     });
     
-    orm = new WebORM(mockConfig);
-    ormInstance = orm.init(testDatabases);
+    orm = new WebORM({ ...mockConfig, autoValidate: false });
+    ormInstance = await orm.init(testDatabases);
   });
 
   describe('initialization', () => {

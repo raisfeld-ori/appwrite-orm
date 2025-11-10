@@ -13,11 +13,13 @@ export class ServerORMInstance<T extends TableDefinition[]> {
   constructor(
     private databases: Databases,
     private databaseId: string,
-    private schemas: Map<string, DatabaseSchema>
+    private schemas: Map<string, DatabaseSchema>,
+    private collectionIds: Map<string, string> = new Map()
   ) {
     // Initialize table instances
     for (const [name, schema] of schemas.entries()) {
-      const table = new ServerTable(databases, databaseId, name, schema);
+      const collectionId = collectionIds.get(name) || name;
+      const table = new ServerTable(databases, databaseId, collectionId, schema);
       this.tables.set(name, table);
     }
   }

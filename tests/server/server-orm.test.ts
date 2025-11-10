@@ -215,7 +215,7 @@ describe('ServerORM', () => {
     let ormInstance: any;
 
     beforeEach(async () => {
-      orm = new ServerORM({ ...mockConfig, autoMigrate: false });
+      orm = new ServerORM({ ...mockConfig, autoMigrate: false, autoValidate: false });
       
       mockDatabasesInstance.get.mockResolvedValue({ $id: 'test-database' });
       
