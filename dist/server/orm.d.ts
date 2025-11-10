@@ -5,6 +5,7 @@ export declare class ServerORM {
     private databases;
     private config;
     private schemas;
+    private collectionIds;
     private migration;
     constructor(config: ORMConfig);
     /**

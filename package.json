@@ -1,6 +1,6 @@
 {
   "name": "appwrite-orm",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A TypeScript ORM package for Appwrite with web and server support",
   "main": "dist/index.js",
   "readme": "https://appwrite-orm.readthedocs.io",

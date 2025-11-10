@@ -5,8 +5,9 @@ export declare class WebORMInstance<T extends TableDefinition[]> {
     private databases;
     private databaseId;
     private schemas;
+    private collectionIds;
     private tables;
-    constructor(databases: Databases, databaseId: string, schemas: Map<string, DatabaseSchema>);
+    constructor(databases: Databases, databaseId: string, schemas: Map<string, DatabaseSchema>, collectionIds?: Map<string, string>);
     /**
      * Get a table instance by name (similar to SQLAlchemy's table access)
      */

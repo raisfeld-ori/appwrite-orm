@@ -15,6 +15,7 @@ export interface DatabaseSchema {
 }
 export interface TableDefinition<T extends DatabaseSchema = DatabaseSchema> {
     name: string;
+    id?: string;
     schema: T;
     role?: Record<string, any>;
 }
@@ -26,6 +27,7 @@ export interface ORMConfig {
     databaseId: string;
     apiKey?: string;
     autoMigrate?: boolean;
+    autoValidate?: boolean;
 }
 export declare function validateRequiredConfig(config: ORMConfig): void;
 export interface ValidationError {

@@ -11,6 +11,10 @@ export declare class Migration {
      */
     migrate(tables: TableDefinition[]): Promise<void>;
     /**
+     * Validate database structure matches the provided table definitions
+     */
+    validate(tables: TableDefinition[]): Promise<void>;
+    /**
      * Ensure database exists, create if it doesn't
      */
     private ensureDatabaseExists;
@@ -18,5 +22,9 @@ export declare class Migration {
      * Migrate a single collection
      */
     private migrateCollection;
+    /**
+     * Validate a single collection structure
+     */
+    private validateCollection;
 }
 //# sourceMappingURL=migration.d.ts.map

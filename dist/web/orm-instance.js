@@ -3,14 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebORMInstance = void 0;
 const table_1 = require("./table");
 class WebORMInstance {
-    constructor(databases, databaseId, schemas) {
+    constructor(databases, databaseId, schemas, collectionIds = new Map()) {
         this.databases = databases;
         this.databaseId = databaseId;
         this.schemas = schemas;
+        this.collectionIds = collectionIds;
         this.tables = new Map();
         // Initialize table instances
         for (const [name, schema] of schemas.entries()) {
-            const table = new table_1.WebTable(databases, databaseId, name, schema);
+            const collectionId = collectionIds.get(name) || name;
+            const table = new table_1.WebTable(databases, databaseId, collectionId, schema);
             this.tables.set(name, table);
         }
     }
