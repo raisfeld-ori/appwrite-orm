@@ -1,22 +1,97 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServerTable = void 0;
+const node_appwrite_1 = require("node-appwrite");
 const table_1 = require("../shared/table");
+const appwrite_extended_1 = require("./appwrite-extended");
 class ServerTable extends table_1.BaseTable {
     constructor(databases, databaseId, collectionId, schema) {
+        // Type assertion needed because node-appwrite and appwrite have compatible but different types
         super(databases, databaseId, collectionId, schema);
+        this.db = new appwrite_extended_1.DatabasesWrapper(databases);
+    }
+    /**
+     * Override query method to use node-appwrite Query instead of web SDK Query
+     */
+    async query(filters, options) {
+        const queries = [];
+        // Build filter queries using node-appwrite Query
+        if (filters) {
+            for (const [key, value] of Object.entries(filters)) {
+                if (value !== undefined && value !== null) {
+                    // Wrap value in array if it isn't already
+                    const valueArray = Array.isArray(value) ? value : [value];
+                    queries.push(node_appwrite_1.Query.equal(key, valueArray));
+                }
+            }
+        }
+        // Add ordering
+        if (options?.orderBy) {
+            options.orderBy.forEach(order => {
+                if (order.startsWith('-')) {
+                    queries.push(node_appwrite_1.Query.orderDesc(order.substring(1)));
+                }
+                else {
+                    queries.push(node_appwrite_1.Query.orderAsc(order));
+                }
+            });
+        }
+        // Add pagination
+        if (options?.limit) {
+            queries.push(node_appwrite_1.Query.limit(options.limit));
+        }
+        if (options?.offset) {
+            queries.push(node_appwrite_1.Query.offset(options.offset));
+        }
+        // Add select fields
+        if (options?.select) {
+            queries.push(node_appwrite_1.Query.select(options.select));
+        }
+        const result = await this.databases.listDocuments(this.databaseId, this.collectionId, queries);
+        return result.documents;
+    }
+    /**
+     * Override find to use node-appwrite queries
+     */
+    async find(queries) {
+        const result = await this.databases.listDocuments(this.databaseId, this.collectionId, queries);
+        return result.documents;
+    }
+    /**
+     * Override count to use node-appwrite Query
+     */
+    async count(filters) {
+        const queries = [];
+        if (filters) {
+            for (const [key, value] of Object.entries(filters)) {
+                if (value !== undefined && value !== null) {
+                    const valueArray = Array.isArray(value) ? value : [value];
+                    queries.push(node_appwrite_1.Query.equal(key, valueArray));
+                }
+            }
+        }
+        const result = await this.databases.listDocuments(this.databaseId, this.collectionId, queries);
+        return result.total;
+    }
+    /**
+     * Override findOne to use node-appwrite Query
+     */
+    async findOne(queries) {
+        const queriesWithLimit = [...queries, node_appwrite_1.Query.limit(1)];
+        const results = await this.find(queriesWithLimit);
+        return results.length > 0 ? results[0] : null;
     }
     /**
      * Server-specific method to create collection
      */
     async createCollection(name, permissions) {
-        await this.databases.createCollection(this.databaseId, this.collectionId, name || this.collectionId, permissions);
+        await this.db.createCollection(this.databaseId, this.collectionId, name || this.collectionId, permissions);
     }
     /**
      * Server-specific method to delete collection
      */
     async deleteCollection() {
-        await this.databases.deleteCollection(this.databaseId, this.collectionId);
+        await this.db.deleteCollection(this.databaseId, this.collectionId);
     }
     /**
      * Bulk insert documents (server-only optimization)

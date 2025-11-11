@@ -20,7 +20,7 @@ type InferFieldType<T> = T extends { type: infer U; required: true }
   : unknown;
 
 // Convert schema to TypeScript type
-type SchemaToType<T extends DatabaseSchema> = {
+export type SchemaToType<T extends DatabaseSchema> = {
   [K in keyof T]: InferFieldType<T[K]>;
 } & { $id: string };
 
@@ -32,7 +32,7 @@ export interface QueryOptions {
 }
 
 export interface FilterOptions {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export abstract class BaseTable<T extends DatabaseSchema> {
@@ -64,8 +64,8 @@ export abstract class BaseTable<T extends DatabaseSchema> {
         id
       );
       return result as SchemaToType<T>;
-    } catch (error: any) {
-      if (error.code === 404) {
+    } catch (error: unknown) {
+      if (error instanceof Error && 'code' in error && (error as any).code === 404) {
         return null;
       }
       throw error;
@@ -93,7 +93,9 @@ export abstract class BaseTable<T extends DatabaseSchema> {
     if (filters) {
       for (const [key, value] of Object.entries(filters)) {
         if (value !== undefined && value !== null) {
-          queries.push(Query.equal(key, value));
+          // Wrap value in array if it isn't already (Appwrite Query API expects arrays)
+          const valueArray = Array.isArray(value) ? value : [value];
+          queries.push(Query.equal(key, valueArray));
         }
       }
     }
@@ -166,7 +168,8 @@ export abstract class BaseTable<T extends DatabaseSchema> {
     if (filters) {
       for (const [key, value] of Object.entries(filters)) {
         if (value !== undefined && value !== null) {
-          queries.push(Query.equal(key, value));
+          const valueArray = Array.isArray(value) ? value : [value];
+          queries.push(Query.equal(key, valueArray));
         }
       }
     }
@@ -191,7 +194,7 @@ export abstract class BaseTable<T extends DatabaseSchema> {
       this.databaseId,
       this.collectionId,
       ID.unique(),
-      data as any
+      data as Record<string, unknown>
     );
 
     return result as SchemaToType<T>;
@@ -208,7 +211,7 @@ export abstract class BaseTable<T extends DatabaseSchema> {
       this.databaseId,
       this.collectionId,
       id,
-      data as any
+      data as Record<string, unknown>
     );
 
     return result as SchemaToType<T>;
@@ -250,13 +253,16 @@ export abstract class BaseTable<T extends DatabaseSchema> {
   /**
    * Validate data against schema
    */
-  protected validateData(data: any, requireAll: boolean = false): void {
+  protected validateData(data: Record<string, unknown>, requireAll: boolean = false): void {
     const errors: ValidationError[] = [];
 
-    for (const [fieldName, fieldDef] of Object.entries(this.schema)) {
-      const value = data[fieldName];
-      const fieldErrors = Validator.validateField(value, fieldDef, fieldName);
-      errors.push(...fieldErrors);
+    // Only validate fields that are present in the data
+    for (const [fieldName, value] of Object.entries(data)) {
+      const fieldDef = this.schema[fieldName];
+      if (fieldDef) {
+        const fieldErrors = Validator.validateField(value, fieldDef, fieldName);
+        errors.push(...fieldErrors);
+      }
     }
 
     if (requireAll) {

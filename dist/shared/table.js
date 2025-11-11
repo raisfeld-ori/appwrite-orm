@@ -45,7 +45,9 @@ class BaseTable {
         if (filters) {
             for (const [key, value] of Object.entries(filters)) {
                 if (value !== undefined && value !== null) {
-                    queries.push(appwrite_1.Query.equal(key, value));
+                    // Wrap value in array if it isn't already (Appwrite Query API expects arrays)
+                    const valueArray = Array.isArray(value) ? value : [value];
+                    queries.push(appwrite_1.Query.equal(key, valueArray));
                 }
             }
         }
@@ -156,10 +158,13 @@ class BaseTable {
      */
     validateData(data, requireAll = false) {
         const errors = [];
-        for (const [fieldName, fieldDef] of Object.entries(this.schema)) {
-            const value = data[fieldName];
-            const fieldErrors = utils_1.Validator.validateField(value, fieldDef, fieldName);
-            errors.push(...fieldErrors);
+        // Only validate fields that are present in the data
+        for (const [fieldName, value] of Object.entries(data)) {
+            const fieldDef = this.schema[fieldName];
+            if (fieldDef) {
+                const fieldErrors = utils_1.Validator.validateField(value, fieldDef, fieldName);
+                errors.push(...fieldErrors);
+            }
         }
         if (requireAll) {
             // Check for missing required fields

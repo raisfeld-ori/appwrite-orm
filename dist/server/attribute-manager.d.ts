@@ -1,8 +1,8 @@
-import { Databases } from 'appwrite';
+import { Databases } from 'node-appwrite';
 import { ORMConfig } from '../shared/types';
 export declare class AttributeManager {
-    private databases;
     private config;
+    private db;
     constructor(databases: Databases, config: ORMConfig);
     /**
      * Create an attribute in Appwrite

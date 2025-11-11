@@ -4,6 +4,7 @@ exports.WebORM = void 0;
 const appwrite_1 = require("appwrite");
 const types_1 = require("../shared/types");
 const orm_instance_1 = require("./orm-instance");
+const appwrite_extended_1 = require("../server/appwrite-extended");
 class WebORM {
     constructor(config) {
         this.schemas = new Map();
@@ -19,6 +20,9 @@ class WebORM {
             .setEndpoint(config.endpoint)
             .setProject(config.projectId);
         this.databases = new appwrite_1.Databases(this.client);
+        // Type assertion needed because DatabasesWrapper expects node-appwrite types
+        // but at runtime they're compatible for the operations we use
+        this.db = new appwrite_extended_1.DatabasesWrapper(this.databases);
     }
     /**
      * Initialize the ORM with table definitions
@@ -45,7 +49,7 @@ class WebORM {
                 const collectionId = table.id || table.name;
                 try {
                     // Try to get the collection to verify it exists
-                    await this.databases.getCollection(this.config.databaseId, collectionId);
+                    await this.db.getCollection(this.config.databaseId, collectionId);
                 }
                 catch (error) {
                     throw new types_1.ORMMigrationError(`Collection ${collectionId} does not exist in database. Please create it first or use ServerORM with autoMigrate.`);

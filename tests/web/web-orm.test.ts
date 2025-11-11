@@ -1,8 +1,16 @@
 import { WebORM } from '../../src/web';
 import { Database, ORMValidationError } from '../../src/shared/types';
 
+// Create mock client with call method
+const mockClientInstance = {
+  setEndpoint: jest.fn().mockReturnThis(),
+  setProject: jest.fn().mockReturnThis(),
+  call: jest.fn(), // Add the call method for API calls
+};
+
 // Create mock instances that will be reused
 const mockDatabasesInstance = {
+  client: mockClientInstance, // Add client property
   createDocument: jest.fn(),
   updateDocument: jest.fn(),
   getDocument: jest.fn(),
@@ -12,10 +20,7 @@ const mockDatabasesInstance = {
 
 // Mock Appwrite
 jest.mock('appwrite', () => ({
-  Client: jest.fn().mockImplementation(() => ({
-    setEndpoint: jest.fn().mockReturnThis(),
-    setProject: jest.fn().mockReturnThis(),
-  })),
+  Client: jest.fn().mockImplementation(() => mockClientInstance),
   Databases: jest.fn().mockImplementation(() => mockDatabasesInstance),
   ID: {
     unique: jest.fn(() => 'unique()')

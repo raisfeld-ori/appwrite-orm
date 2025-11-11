@@ -4,10 +4,11 @@ exports.Migration = void 0;
 const types_1 = require("../shared/types");
 const attribute_manager_1 = require("./attribute-manager");
 const permission_manager_1 = require("./permission-manager");
+const appwrite_extended_1 = require("./appwrite-extended");
 class Migration {
     constructor(databases, config) {
-        this.databases = databases;
         this.config = config;
+        this.db = new appwrite_extended_1.DatabasesWrapper(databases);
         this.attributeManager = new attribute_manager_1.AttributeManager(databases, config);
         this.permissionManager = new permission_manager_1.PermissionManager();
     }
@@ -34,7 +35,7 @@ class Migration {
         try {
             // Check if database exists
             try {
-                await this.databases.get(this.config.databaseId);
+                await this.db.getDatabase(this.config.databaseId);
             }
             catch (error) {
                 throw new types_1.ORMMigrationError(`Database ${this.config.databaseId} does not exist`);
@@ -53,11 +54,11 @@ class Migration {
      */
     async ensureDatabaseExists() {
         try {
-            await this.databases.get(this.config.databaseId);
+            await this.db.getDatabase(this.config.databaseId);
         }
         catch (error) {
             // Database doesn't exist, create it
-            await this.databases.create(this.config.databaseId, 'ORM Database');
+            await this.db.createDatabase(this.config.databaseId, 'ORM Database');
         }
     }
     /**
@@ -69,13 +70,13 @@ class Migration {
             // Check if collection exists
             let collection;
             try {
-                collection = await this.databases.getCollection(this.config.databaseId, collectionId);
+                collection = await this.db.getCollection(this.config.databaseId, collectionId);
             }
             catch (error) {
                 // Create collection if it doesn't exist
                 // Default to public permissions if no role specified
                 const permissions = table.role ? this.permissionManager.convertRoleToPermissions(table.role) : ['read("any")'];
-                collection = await this.databases.createCollection(this.config.databaseId, collectionId, table.name, permissions);
+                collection = await this.db.createCollection(this.config.databaseId, collectionId, table.name, permissions);
             }
             // Get existing attributes
             const existingAttributes = new Set(collection.attributes?.map((attr) => attr.key) || []);
@@ -99,7 +100,7 @@ class Migration {
             // Check if collection exists
             let collection;
             try {
-                collection = await this.databases.getCollection(this.config.databaseId, collectionId);
+                collection = await this.db.getCollection(this.config.databaseId, collectionId);
             }
             catch (error) {
                 throw new types_1.ORMMigrationError(`Collection ${collectionId} does not exist in database`);

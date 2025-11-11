@@ -93,7 +93,7 @@ export class WebORMInstance<T extends TableDefinition[]> {
    * Legacy method - Delete a document
    * @deprecated Use table(name).delete() instead
    */
-  async delete(collection: string, documentId: string): Promise<void> {
-    return this.table(collection as any).delete(documentId);
+  async delete<K extends T[number]['name']>(collection: K, documentId: string): Promise<void> {
+    return this.table(collection).delete(documentId);
   }
 }

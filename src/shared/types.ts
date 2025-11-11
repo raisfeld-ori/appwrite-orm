@@ -14,6 +14,8 @@ export type AppwriteAttributeType =
 export type TypeScriptType = 
   | 'string'
   | 'number'
+  | 'integer'
+  | 'float'
   | 'boolean'
   | 'Date'
   | string[]; // for enums
@@ -21,7 +23,7 @@ export type TypeScriptType =
 export interface DatabaseField {
   type: TypeScriptType;
   required?: boolean;
-  default?: any;
+  default?: unknown;
   array?: boolean;
   size?: number; // for strings
   min?: number; // for numbers
@@ -37,7 +39,7 @@ export interface TableDefinition<T extends DatabaseSchema = DatabaseSchema> {
   name: string;
   id?: string; // Optional collection ID, defaults to name if not provided
   schema: T;
-  role?: Record<string, any>; // Optional JSON role, defaults to public
+  role?: Record<string, unknown>; // Optional JSON role, defaults to public
 }
 
 // Legacy alias for backward compatibility
@@ -71,7 +73,7 @@ export function validateRequiredConfig(config: ORMConfig): void {
 export interface ValidationError {
   field: string;
   message: string;
-  value?: any;
+  value?: unknown;
 }
 
 export class ORMValidationError extends Error {

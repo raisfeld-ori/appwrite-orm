@@ -1,10 +1,10 @@
-import { Databases } from 'appwrite';
+import { Databases } from 'node-appwrite';
 import { TableDefinition, ORMConfig } from '../shared/types';
 export declare class Migration {
-    private databases;
     private config;
     private attributeManager;
     private permissionManager;
+    private db;
     constructor(databases: Databases, config: ORMConfig);
     /**
      * Migrate table schemas

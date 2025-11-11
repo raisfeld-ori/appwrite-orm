@@ -1,10 +1,12 @@
 import { Client, Databases } from 'appwrite';
 import { TableDefinition, ORMConfig, DatabaseSchema, validateRequiredConfig, ORMMigrationError } from '../shared/types';
 import { WebORMInstance } from './orm-instance';
+import { DatabasesWrapper } from '../server/appwrite-extended';
 
 export class WebORM {
   private client: Client;
   private databases: Databases;
+  private db: DatabasesWrapper;
   private config: ORMConfig;
   private schemas: Map<string, DatabaseSchema> = new Map();
   private collectionIds: Map<string, string> = new Map(); // Map table name to collection ID
@@ -24,6 +26,9 @@ export class WebORM {
       .setProject(config.projectId);
     
     this.databases = new Databases(this.client);
+    // Type assertion needed because DatabasesWrapper expects node-appwrite types
+    // but at runtime they're compatible for the operations we use
+    this.db = new DatabasesWrapper(this.databases as any);
   }
 
   /**
@@ -54,7 +59,7 @@ export class WebORM {
         const collectionId = table.id || table.name;
         try {
           // Try to get the collection to verify it exists
-          await (this.databases as any).getCollection(this.config.databaseId, collectionId);
+          await this.db.getCollection(this.config.databaseId, collectionId);
         } catch (error) {
           throw new ORMMigrationError(
             `Collection ${collectionId} does not exist in database. Please create it first or use ServerORM with autoMigrate.`

@@ -1,4 +1,4 @@
-import { Databases } from 'appwrite';
+import { Databases } from 'node-appwrite';
 import { TableDefinition, DatabaseSchema } from '../shared/types';
 import { ServerTable } from './table';
 export declare class ServerORMInstance<T extends TableDefinition[]> {
@@ -41,16 +41,16 @@ export declare class ServerORMInstance<T extends TableDefinition[]> {
      * Legacy method - Delete a document
      * @deprecated Use table(name).delete() instead
      */
-    delete(collection: string, documentId: string): Promise<void>;
+    delete<K extends T[number]['name']>(collection: K, documentId: string): Promise<void>;
     /**
      * Legacy method - Create a new collection (server-only feature)
      * @deprecated Use table(name).createCollection() instead
      */
-    createCollection(collectionId: string, name: string, permissions?: string[]): Promise<void>;
+    createCollection<K extends T[number]['name']>(collectionId: K, name: string, permissions?: string[]): Promise<void>;
     /**
      * Legacy method - Delete a collection (server-only feature)
      * @deprecated Use table(name).deleteCollection() instead
      */
-    deleteCollection(collectionId: string): Promise<void>;
+    deleteCollection<K extends T[number]['name']>(collectionId: K): Promise<void>;
 }
 //# sourceMappingURL=orm-instance.d.ts.map

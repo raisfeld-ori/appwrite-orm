@@ -1,16 +1,19 @@
-import { Databases } from 'appwrite';
+import { Databases, Models } from 'node-appwrite';
 import { TableDefinition, ORMConfig, ORMMigrationError } from '../shared/types';
 import { AttributeManager } from './attribute-manager';
 import { PermissionManager } from './permission-manager';
+import { DatabasesWrapper } from './appwrite-extended';
 
 export class Migration {
   private attributeManager: AttributeManager;
   private permissionManager: PermissionManager;
+  private db: DatabasesWrapper;
 
   constructor(
-    private databases: Databases,
+    databases: Databases,
     private config: ORMConfig
   ) {
+    this.db = new DatabasesWrapper(databases);
     this.attributeManager = new AttributeManager(databases, config);
     this.permissionManager = new PermissionManager();
   }
@@ -27,8 +30,9 @@ export class Migration {
       for (const table of tables) {
         await this.migrateCollection(table);
       }
-    } catch (error: any) {
-      throw new ORMMigrationError(`Migration failed: ${error?.message || 'Unknown error'}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new ORMMigrationError(`Migration failed: ${message}`);
     }
   }
 
@@ -39,7 +43,7 @@ export class Migration {
     try {
       // Check if database exists
       try {
-        await (this.databases as any).get(this.config.databaseId);
+        await this.db.getDatabase(this.config.databaseId);
       } catch (error) {
         throw new ORMMigrationError(`Database ${this.config.databaseId} does not exist`);
       }
@@ -48,8 +52,9 @@ export class Migration {
       for (const table of tables) {
         await this.validateCollection(table);
       }
-    } catch (error: any) {
-      throw new ORMMigrationError(`Validation failed: ${error?.message || 'Unknown error'}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new ORMMigrationError(`Validation failed: ${message}`);
     }
   }
 
@@ -58,10 +63,10 @@ export class Migration {
    */
   private async ensureDatabaseExists(): Promise<void> {
     try {
-      await (this.databases as any).get(this.config.databaseId);
+      await this.db.getDatabase(this.config.databaseId);
     } catch (error) {
       // Database doesn't exist, create it
-      await (this.databases as any).create(this.config.databaseId, 'ORM Database');
+      await this.db.createDatabase(this.config.databaseId, 'ORM Database');
     }
   }
 
@@ -73,14 +78,14 @@ export class Migration {
       const collectionId = table.id || table.name;
       
       // Check if collection exists
-      let collection: any;
+      let collection: Models.Collection;
       try {
-        collection = await (this.databases as any).getCollection(this.config.databaseId, collectionId);
+        collection = await this.db.getCollection(this.config.databaseId, collectionId);
       } catch (error) {
         // Create collection if it doesn't exist
         // Default to public permissions if no role specified
         const permissions = table.role ? this.permissionManager.convertRoleToPermissions(table.role) : ['read("any")'];
-        collection = await (this.databases as any).createCollection(
+        collection = await this.db.createCollection(
           this.config.databaseId,
           collectionId,
           table.name,
@@ -89,7 +94,7 @@ export class Migration {
       }
 
       // Get existing attributes
-      const existingAttributes = new Set(collection.attributes?.map((attr: any) => attr.key) || []);
+      const existingAttributes = new Set(collection.attributes?.map((attr) => attr.key) || []);
 
       // Add new attributes
       for (const [fieldName, fieldConfig] of Object.entries(table.schema)) {
@@ -98,8 +103,9 @@ export class Migration {
         }
       }
 
-    } catch (error: any) {
-      throw new ORMMigrationError(`Failed to migrate collection ${table.name}: ${error?.message || 'Unknown error'}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new ORMMigrationError(`Failed to migrate collection ${table.name}: ${message}`);
     }
   }
 
@@ -111,9 +117,9 @@ export class Migration {
       const collectionId = table.id || table.name;
       
       // Check if collection exists
-      let collection: any;
+      let collection: Models.Collection;
       try {
-        collection = await (this.databases as any).getCollection(this.config.databaseId, collectionId);
+        collection = await this.db.getCollection(this.config.databaseId, collectionId);
       } catch (error) {
         throw new ORMMigrationError(`Collection ${collectionId} does not exist in database`);
       }
@@ -127,7 +133,7 @@ export class Migration {
       }
 
       const existingAttributes = new Map(
-        attributes.map((attr: any) => [attr.key, attr])
+        attributes.map((attr) => [attr.key, attr])
       );
 
       // Validate required attributes exist
@@ -144,11 +150,12 @@ export class Migration {
         );
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof ORMMigrationError) {
         throw error;
       }
-      throw new ORMMigrationError(`Failed to validate collection ${table.name}: ${error?.message || 'Unknown error'}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new ORMMigrationError(`Failed to validate collection ${table.name}: ${message}`);
     }
   }
 }

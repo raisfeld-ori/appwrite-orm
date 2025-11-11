@@ -10,7 +10,10 @@ export class TypeMapper {
       case 'string':
         return 'string';
       case 'number':
+      case 'integer':
         return 'integer';
+      case 'float':
+        return 'float';
       case 'boolean':
         return 'boolean';
       case 'Date':
@@ -43,7 +46,7 @@ export class TypeMapper {
 }
 
 export class Validator {
-  static validateField(value: any, field: DatabaseField, fieldName: string): ValidationError[] {
+  static validateField(value: unknown, field: DatabaseField, fieldName: string): ValidationError[] {
     const errors: ValidationError[] = [];
 
     // Check required fields
@@ -58,6 +61,31 @@ export class Validator {
 
     // Skip validation if value is undefined/null and not required
     if (value === undefined || value === null) {
+      return errors;
+    }
+
+    // If field is an array, validate each element
+    if (field.array && Array.isArray(value)) {
+      for (const item of value) {
+        if (!this.validateType(item, field.type)) {
+          errors.push({
+            field: fieldName,
+            message: `Array contains invalid type. Expected ${this.getTypeString(field.type)}, got ${typeof item}`,
+            value
+          });
+          break; // Only report once per array
+        }
+      }
+      return errors;
+    }
+
+    // If field is marked as array but value isn't an array, that's an error
+    if (field.array && !Array.isArray(value)) {
+      errors.push({
+        field: fieldName,
+        message: `Expected array, got ${typeof value}`,
+        value
+      });
       return errors;
     }
 
@@ -83,7 +111,7 @@ export class Validator {
     }
 
     // Number validations
-    if (field.type === 'number' && typeof value === 'number') {
+    if ((field.type === 'number' || field.type === 'integer' || field.type === 'float') && typeof value === 'number') {
       if (field.min !== undefined && value < field.min) {
         errors.push({
           field: fieldName,
@@ -102,7 +130,7 @@ export class Validator {
 
     // Enum validation
     if (Array.isArray(field.type) && field.enum) {
-      if (!field.enum.includes(value)) {
+      if (!field.enum.includes(value as string)) {
         errors.push({
           field: fieldName,
           message: `Value must be one of: ${field.enum.join(', ')}`,
@@ -114,7 +142,7 @@ export class Validator {
     return errors;
   }
 
-  private static validateType(value: any, expectedType: TypeScriptType): boolean {
+  private static validateType(value: unknown, expectedType: TypeScriptType): boolean {
     if (Array.isArray(expectedType)) {
       return typeof value === 'string';
     }
@@ -123,6 +151,8 @@ export class Validator {
       case 'string':
         return typeof value === 'string';
       case 'number':
+      case 'integer':
+      case 'float':
         return typeof value === 'number' && !isNaN(value);
       case 'boolean':
         return typeof value === 'boolean';

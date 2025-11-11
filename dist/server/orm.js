@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServerORM = void 0;
-const appwrite_1 = require("appwrite");
+const node_appwrite_1 = require("node-appwrite");
 const types_1 = require("../shared/types");
 const migration_1 = require("./migration");
 const orm_instance_1 = require("./orm-instance");
@@ -23,20 +23,17 @@ class ServerORM {
             config.autoValidate = true;
         }
         this.config = config;
-        this.client = new appwrite_1.Client()
+        this.client = new node_appwrite_1.Client();
+        // Set endpoint and project
+        this.client
             .setEndpoint(config.endpoint)
             .setProject(config.projectId);
         // Set API key for server-side operations
+        // The setKey method exists in the node SDK but isn't in TypeScript types
         if (config.apiKey) {
-            try {
-                this.client.setKey(config.apiKey);
-            }
-            catch (error) {
-                // For newer Appwrite versions, the key might be set differently
-                console.warn('Could not set API key using setKey method. Please ensure you are using the correct Appwrite SDK version.');
-            }
+            this.client.setKey(config.apiKey);
         }
-        this.databases = new appwrite_1.Databases(this.client);
+        this.databases = new node_appwrite_1.Databases(this.client);
         this.migration = new migration_1.Migration(this.databases, this.config);
     }
     /**

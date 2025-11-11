@@ -1,4 +1,4 @@
-import { Databases } from 'appwrite';
+import { Databases, Models } from 'node-appwrite';
 import { TableDefinition, DatabaseSchema } from '../shared/types';
 import { ServerTable } from './table';
 
@@ -8,7 +8,7 @@ type CreateTableMap<T extends TableDefinition[]> = {
 };
 
 export class ServerORMInstance<T extends TableDefinition[]> {
-  private tables: Map<string, ServerTable<any>> = new Map();
+  private tables: Map<string, ServerTable<DatabaseSchema>> = new Map();
 
   constructor(
     private databases: Databases,
@@ -41,9 +41,9 @@ export class ServerORMInstance<T extends TableDefinition[]> {
    */
   async create<K extends T[number]['name']>(
     collection: K,
-    data: any
-  ): Promise<any> {
-    return this.table(collection).create(data);
+    data: Record<string, unknown>
+  ): Promise<Models.Document> {
+    return this.table(collection).create(data as any) as Promise<Models.Document>;
   }
 
   /**
@@ -53,9 +53,9 @@ export class ServerORMInstance<T extends TableDefinition[]> {
   async update<K extends T[number]['name']>(
     collection: K,
     documentId: string,
-    data: any
-  ): Promise<any> {
-    return this.table(collection).update(documentId, data);
+    data: Record<string, unknown>
+  ): Promise<Models.Document> {
+    return this.table(collection).update(documentId, data as any) as Promise<Models.Document>;
   }
 
   /**
@@ -65,8 +65,8 @@ export class ServerORMInstance<T extends TableDefinition[]> {
   async get<K extends T[number]['name']>(
     collection: K,
     documentId: string
-  ): Promise<any> {
-    return this.table(collection).get(documentId);
+  ): Promise<Models.Document | null> {
+    return this.table(collection).get(documentId) as Promise<Models.Document | null>;
   }
 
   /**
@@ -77,15 +77,15 @@ export class ServerORMInstance<T extends TableDefinition[]> {
     collection: K,
     queries?: string[]
   ): Promise<{
-    documents: any[];
+    documents: Models.Document[];
     total: number;
   }> {
     if (queries) {
       const documents = await this.table(collection).find(queries);
-      return { documents, total: documents.length };
+      return { documents: documents as Models.Document[], total: documents.length };
     } else {
       const documents = await this.table(collection).all();
-      return { documents, total: documents.length };
+      return { documents: documents as Models.Document[], total: documents.length };
     }
   }
 
@@ -93,27 +93,27 @@ export class ServerORMInstance<T extends TableDefinition[]> {
    * Legacy method - Delete a document
    * @deprecated Use table(name).delete() instead
    */
-  async delete(collection: string, documentId: string): Promise<void> {
-    return this.table(collection as any).delete(documentId);
+  async delete<K extends T[number]['name']>(collection: K, documentId: string): Promise<void> {
+    return this.table(collection).delete(documentId);
   }
 
   /**
    * Legacy method - Create a new collection (server-only feature)
    * @deprecated Use table(name).createCollection() instead
    */
-  async createCollection(
-    collectionId: string,
+  async createCollection<K extends T[number]['name']>(
+    collectionId: K,
     name: string,
     permissions?: string[]
   ): Promise<void> {
-    return this.table(collectionId as any).createCollection(name, permissions);
+    return this.table(collectionId).createCollection(name, permissions);
   }
 
   /**
    * Legacy method - Delete a collection (server-only feature)
    * @deprecated Use table(name).deleteCollection() instead
    */
-  async deleteCollection(collectionId: string): Promise<void> {
-    return this.table(collectionId as any).deleteCollection();
+  async deleteCollection<K extends T[number]['name']>(collectionId: K): Promise<void> {
+    return this.table(collectionId).deleteCollection();
   }
 }

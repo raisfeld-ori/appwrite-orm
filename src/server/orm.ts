@@ -1,7 +1,8 @@
-import { Client, Databases } from 'appwrite';
+import { Client, Databases } from 'node-appwrite';
 import { TableDefinition, ORMConfig, DatabaseSchema, validateRequiredConfig } from '../shared/types';
 import { Migration } from './migration';
 import { ServerORMInstance } from './orm-instance';
+import { ClientWrapper } from './appwrite-extended';
 
 export class ServerORM {
   private client: Client;
@@ -30,18 +31,17 @@ export class ServerORM {
     }
 
     this.config = config;
-    this.client = new Client()
+    this.client = new Client();
+    
+    // Set endpoint and project
+    this.client
       .setEndpoint(config.endpoint)
       .setProject(config.projectId);
     
     // Set API key for server-side operations
+    // The setKey method exists in the node SDK but isn't in TypeScript types
     if (config.apiKey) {
-      try {
-        (this.client as any).setKey(config.apiKey);
-      } catch (error) {
-        // For newer Appwrite versions, the key might be set differently
-        console.warn('Could not set API key using setKey method. Please ensure you are using the correct Appwrite SDK version.');
-      }
+      (this.client as any).setKey(config.apiKey);
     }
     
     this.databases = new Databases(this.client);

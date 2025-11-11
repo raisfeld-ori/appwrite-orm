@@ -3,6 +3,7 @@ import { WebORMInstance } from './orm-instance';
 export declare class WebORM {
     private client;
     private databases;
+    private db;
     private config;
     private schemas;
     private collectionIds;

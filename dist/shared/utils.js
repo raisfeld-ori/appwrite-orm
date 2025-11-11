@@ -57,6 +57,29 @@ class Validator {
         if (value === undefined || value === null) {
             return errors;
         }
+        // If field is an array, validate each element
+        if (field.array && Array.isArray(value)) {
+            for (const item of value) {
+                if (!this.validateType(item, field.type)) {
+                    errors.push({
+                        field: fieldName,
+                        message: `Array contains invalid type. Expected ${this.getTypeString(field.type)}, got ${typeof item}`,
+                        value
+                    });
+                    break; // Only report once per array
+                }
+            }
+            return errors;
+        }
+        // If field is marked as array but value isn't an array, that's an error
+        if (field.array && !Array.isArray(value)) {
+            errors.push({
+                field: fieldName,
+                message: `Expected array, got ${typeof value}`,
+                value
+            });
+            return errors;
+        }
         // Type validation
         if (!this.validateType(value, field.type)) {
             errors.push({

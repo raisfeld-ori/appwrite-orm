@@ -2,4 +2,5 @@
 export * from './shared/types';
 export * from './shared/table';
 export * from './web';
-export * from './server';
+// Export server but exclude Query to avoid conflict
+export { ServerORM, ServerORMInstance, ServerTable, Migration, AttributeManager, PermissionManager, DatabasesWrapper, ClientWrapper } from './server';

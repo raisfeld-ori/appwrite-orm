@@ -1,73 +1,87 @@
-import { Databases } from 'appwrite';
-import { ORMConfig, ORMMigrationError } from '../shared/types';
+import { Databases } from 'node-appwrite';
+import { ORMConfig, ORMMigrationError, DatabaseField } from '../shared/types';
 import { TypeMapper } from '../shared/utils';
+import { DatabasesWrapper } from './appwrite-extended';
 
 export class AttributeManager {
+  private db: DatabasesWrapper;
+
   constructor(
-    private databases: Databases,
+    databases: Databases,
     private config: ORMConfig
-  ) {}
+  ) {
+    this.db = new DatabasesWrapper(databases);
+  }
 
   /**
    * Create an attribute in Appwrite
    */
-  async createAttribute(collectionId: string, key: string, field: any): Promise<void> {
+  async createAttribute(collectionId: string, key: string, field: DatabaseField): Promise<void> {
     const appwriteType = TypeMapper.toAppwriteType(field.type);
+    const isRequired = field.required || false;
+    // Appwrite doesn't allow default values on required fields
+    const defaultValue = isRequired ? undefined : field.default;
+    const isArray = field.array || false;
     
     try {
       switch (appwriteType) {
         case 'string':
-          await (this.databases as any).createStringAttribute(
+          await this.db.createStringAttribute(
             this.config.databaseId,
             collectionId,
             key,
             field.size || 255,
-            field.required || false,
-            field.default
+            isRequired,
+            defaultValue as string | null | undefined,
+            isArray
           );
           break;
           
         case 'integer':
-          await (this.databases as any).createIntegerAttribute(
+          await this.db.createIntegerAttribute(
             this.config.databaseId,
             collectionId,
             key,
-            field.required || false,
+            isRequired,
             field.min,
             field.max,
-            field.default
+            defaultValue as number | null | undefined,
+            isArray
           );
           break;
           
         case 'float':
-          await (this.databases as any).createFloatAttribute(
+          await this.db.createFloatAttribute(
             this.config.databaseId,
             collectionId,
             key,
-            field.required || false,
+            isRequired,
             field.min,
             field.max,
-            field.default
+            defaultValue as number | null | undefined,
+            isArray
           );
           break;
           
         case 'boolean':
-          await (this.databases as any).createBooleanAttribute(
+          await this.db.createBooleanAttribute(
             this.config.databaseId,
             collectionId,
             key,
-            field.required || false,
-            field.default
+            isRequired,
+            defaultValue as boolean | null | undefined,
+            isArray
           );
           break;
           
         case 'datetime':
-          await (this.databases as any).createDatetimeAttribute(
+          await this.db.createDatetimeAttribute(
             this.config.databaseId,
             collectionId,
             key,
-            field.required || false,
-            field.default
+            isRequired,
+            defaultValue as string | null | undefined,
+            isArray
           );
           break;
           
@@ -75,21 +89,23 @@ export class AttributeManager {
           if (!field.enum || !Array.isArray(field.enum)) {
             throw new Error(`Enum field ${key} must have an enum array`);
           }
-          await (this.databases as any).createEnumAttribute(
+          await this.db.createEnumAttribute(
             this.config.databaseId,
             collectionId,
             key,
             field.enum,
-            field.required || false,
-            field.default
+            isRequired,
+            defaultValue as string | null | undefined,
+            isArray
           );
           break;
           
         default:
           throw new Error(`Unsupported attribute type: ${appwriteType}`);
       }
-    } catch (error: any) {
-      throw new ORMMigrationError(`Failed to create attribute ${key}: ${error?.message || 'Unknown error'}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new ORMMigrationError(`Failed to create attribute ${key}: ${message}`);
     }
   }
 }

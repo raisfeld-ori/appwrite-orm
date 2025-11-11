@@ -1,8 +1,25 @@
-import { Databases } from 'appwrite';
+import { Databases } from 'node-appwrite';
 import { DatabaseSchema } from '../shared/types';
-import { BaseTable } from '../shared/table';
+import { BaseTable, FilterOptions, QueryOptions } from '../shared/table';
 export declare class ServerTable<T extends DatabaseSchema> extends BaseTable<T> {
+    private db;
     constructor(databases: Databases, databaseId: string, collectionId: string, schema: T);
+    /**
+     * Override query method to use node-appwrite Query instead of web SDK Query
+     */
+    query(filters?: FilterOptions, options?: QueryOptions): Promise<any[]>;
+    /**
+     * Override find to use node-appwrite queries
+     */
+    find(queries: any[]): Promise<any[]>;
+    /**
+     * Override count to use node-appwrite Query
+     */
+    count(filters?: FilterOptions): Promise<number>;
+    /**
+     * Override findOne to use node-appwrite Query
+     */
+    findOne(queries: any[]): Promise<any | null>;
     /**
      * Server-specific method to create collection
      */

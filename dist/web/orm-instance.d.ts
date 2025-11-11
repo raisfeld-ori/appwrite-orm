@@ -41,6 +41,6 @@ export declare class WebORMInstance<T extends TableDefinition[]> {
      * Legacy method - Delete a document
      * @deprecated Use table(name).delete() instead
      */
-    delete(collection: string, documentId: string): Promise<void>;
+    delete<K extends T[number]['name']>(collection: K, documentId: string): Promise<void>;
 }
 //# sourceMappingURL=orm-instance.d.ts.map
