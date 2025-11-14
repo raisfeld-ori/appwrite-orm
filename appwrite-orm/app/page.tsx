@@ -200,7 +200,7 @@ const user = await db.table('users').create({
 
               <div className="flex flex-wrap gap-4">
                 <a
-                  href="https://appwrite-orm.readthedocs.io/getting-started/quickstart/"
+                  href="https://appwrite-orm.readthedocs.io/en/latest/getting-started/quickstart/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
