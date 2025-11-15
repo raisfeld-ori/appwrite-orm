@@ -87,7 +87,6 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@vercel/analytics": "^1.5.0",
     "appwrite": ">=13.0.0",
     "node-appwrite": "^20.3.0"
   },
