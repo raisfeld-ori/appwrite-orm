@@ -39,9 +39,17 @@ const user = await db.table('users').create({
 const users = await db.table('users').query({ age: 30 });
 ```
 
+## Key Features
+
+- **Type-safe schemas** - Define your database structure with TypeScript
+- **Auto-migration** - Automatically sync schemas with Appwrite
+- **Schema exports** - Export to SQL, Firebase, or text formats
+- **Query builder** - Intuitive API for complex queries
+- **Joins & relations** - Work with related data easily
+
 ## Choose Your Environment
 
-- **[Node.js/Server →](server/setup.md)** - For backend applications with full migration support
+- **[Node.js/Server →](server/setup.md)** - For backend applications with full migration and export support
 - **[Web/Client →](web/setup.md)** - For frontend applications in React, Vue, or vanilla JS
 
 ## Installation

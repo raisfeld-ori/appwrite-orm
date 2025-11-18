@@ -1,6 +1,6 @@
 {
   "name": "appwrite-orm",
-  "version": "0.2.1",
+  "version": "0.2.5",
   "description": "A powerful TypeScript ORM for Appwrite with type-safe schemas, auto-migration, validation, indexes, and join support for both server and web environments",
   "main": "dist/index.js",
   "readme": "https://appwrite-orm.readthedocs.io",

@@ -4,12 +4,18 @@ import { AttributeManager } from './attribute-manager';
 import { IndexManager } from './index-manager';
 import { PermissionManager } from './permission-manager';
 import { DatabasesWrapper } from './appwrite-extended';
+import { SqlMigrations } from './sql-migrations';
+import { FirebaseMigrations } from './firebase-migrations';
+import { TextMigrations } from './text-migrations';
 
 export class Migration {
   private attributeManager: AttributeManager;
   private indexManager: IndexManager;
   private permissionManager: PermissionManager;
   private db: DatabasesWrapper;
+  private sqlMigrations: SqlMigrations;
+  private firebaseMigrations: FirebaseMigrations;
+  private textMigrations: TextMigrations;
 
   constructor(
     databases: Databases,
@@ -19,6 +25,9 @@ export class Migration {
     this.attributeManager = new AttributeManager(databases, config);
     this.indexManager = new IndexManager(databases, config);
     this.permissionManager = new PermissionManager();
+    this.sqlMigrations = new SqlMigrations(config);
+    this.firebaseMigrations = new FirebaseMigrations(config);
+    this.textMigrations = new TextMigrations(config);
   }
 
   /**
@@ -215,5 +224,79 @@ export class Migration {
     throw new ORMMigrationError(
       `Timeout waiting for attributes to become available in collection ${collectionId}`
     );
+  }
+
+  /**
+   * Export schema to SQL format
+   * @param tables Array of table definitions to export
+   * @returns SQL CREATE TABLE statements as a string
+   * @throws ORMMigrationError if validation fails or export encounters an error
+   */
+  exportToSQL(tables: TableDefinition[]): string {
+    this.validateTableDefinitions(tables);
+    return this.sqlMigrations.generateSQL(tables);
+  }
+
+  /**
+   * Export schema to Firebase format
+   * @param tables Array of table definitions to export
+   * @returns Firebase security rules and structure as a JSON string
+   * @throws ORMMigrationError if validation fails or export encounters an error
+   */
+  exportToFirebase(tables: TableDefinition[]): string {
+    this.validateTableDefinitions(tables);
+    return this.firebaseMigrations.generateFirebase(tables);
+  }
+
+  /**
+   * Export schema to text format
+   * @param tables Array of table definitions to export
+   * @returns Human-readable text description of the schema
+   * @throws ORMMigrationError if validation fails or export encounters an error
+   */
+  exportToText(tables: TableDefinition[]): string {
+    this.validateTableDefinitions(tables);
+    return this.textMigrations.generateText(tables);
+  }
+
+  /**
+   * Validate TableDefinition array before processing
+   * @param tables Array of table definitions to validate
+   * @throws ORMMigrationError if validation fails
+   */
+  private validateTableDefinitions(tables: TableDefinition[]): void {
+    // Check if tables is an array
+    if (!Array.isArray(tables)) {
+      throw new ORMMigrationError('Invalid input: tables must be an array');
+    }
+
+    // Allow empty arrays (handled by individual migration classes)
+    if (tables.length === 0) {
+      return;
+    }
+
+    // Validate each table definition
+    for (let i = 0; i < tables.length; i++) {
+      const table = tables[i];
+
+      // Check if table is an object
+      if (!table || typeof table !== 'object') {
+        throw new ORMMigrationError(`Invalid table definition at index ${i}: must be an object`);
+      }
+
+      // Check required fields
+      if (!table.name || typeof table.name !== 'string' || table.name.trim() === '') {
+        throw new ORMMigrationError(`Invalid table definition at index ${i}: missing or invalid 'name' field`);
+      }
+
+      if (!table.schema || typeof table.schema !== 'object') {
+        throw new ORMMigrationError(`Invalid table definition at index ${i}: missing or invalid 'schema' field`);
+      }
+
+      // Validate schema has at least one field
+      if (Object.keys(table.schema).length === 0) {
+        throw new ORMMigrationError(`Invalid table definition '${table.name}': schema must contain at least one field`);
+      }
+    }
   }
 }

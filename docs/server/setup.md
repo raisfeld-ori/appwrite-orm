@@ -159,8 +159,9 @@ app.listen(3000);
 
 ## Next Steps
 
-- [CRUD Operations](crud-operations.md)
-- [Queries](queries.md)
-- [Joins](joins.md)
-- [Bulk Operations](bulk-operations.md)
-- [Indexes](indexes.md)
+- [CRUD Operations](crud-operations.md) - Create, read, update, delete data
+- [Queries](queries.md) - Filter and search data
+- [Joins](joins.md) - Work with related data
+- [Bulk Operations](bulk-operations.md) - Efficient batch operations
+- [Indexes](indexes.md) - Optimize query performance
+- [Migrations](migrations.md) - Export schemas to SQL, Firebase, or text

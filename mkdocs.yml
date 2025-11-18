@@ -75,6 +75,7 @@ nav:
     - Joins: server/joins.md
     - Bulk Operations: server/bulk-operations.md
     - Indexes: server/indexes.md
+    - Migrations: server/migrations.md
 
 extra:
   social:

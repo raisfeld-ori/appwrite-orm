@@ -1,6 +1,22 @@
 import { ServerORM } from '../../src/server';
 import { Database, ORMMigrationError } from '../../src/shared/types';
 
+// Mock appwrite (used by BaseTable)
+jest.mock('appwrite', () => ({
+  ID: {
+    unique: jest.fn(() => 'unique()')
+  },
+  Query: {
+    equal: jest.fn((field, value) => `Query.equal("${field}", ${JSON.stringify(value)})`),
+    greaterThan: jest.fn((field, value) => `Query.greaterThan("${field}", ${value})`),
+    lessThan: jest.fn((field, value) => `Query.lessThan("${field}", ${value})`),
+    limit: jest.fn((value) => `Query.limit(${value})`),
+    offset: jest.fn((value) => `Query.offset(${value})`),
+    orderAsc: jest.fn((field) => `Query.orderAsc("${field}")`),
+    orderDesc: jest.fn((field) => `Query.orderDesc("${field}")`),
+  }
+}));
+
 // Mock node-appwrite
 jest.mock('node-appwrite', () => {
   const mockDatabasesInstance = {

@@ -41,9 +41,9 @@ export default function Home() {
   ];
 
   const futurePlans = [
-    "Migrations between SQL, Appwrite, and Firebase",
     "Caching layer for improved performance on web",
-    "Advanced query builder with SQL-like syntax"
+    "Advanced query builder with SQL-like syntax",
+    "an Appwrite-ORM MCP server"
   ];
 
   const codeExample = `import { ServerORM } from 'appwrite-orm/server';
@@ -325,6 +325,57 @@ const user = await db.table('users').create({
             ))}
           </div>
         </div>
+
+        {/* New Features Section */}
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="container mx-auto px-6 py-12"
+        >
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+              New Features
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400">
+              Latest additions in the current version (0.2.5)
+            </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto">
+            <div className={cn(
+              "p-12 rounded-2xl",
+              "bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl",
+              "border border-white/50 dark:border-gray-800/50",
+              "shadow-xl"
+            )}>
+              <ul className="space-y-6">
+                <motion.li
+                  initial={{ x: -20, opacity: 0 }}
+                  whileInView={{ x: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4 }}
+                  className="flex items-start gap-4"
+                >
+                  <Star className="h-5 w-5 text-[--color-primary-500] dark:text-[--color-primary-400] shrink-0 mt-1" />
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Export to SQL / Firebase / Text</h3>
+                    <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+                      Want to switch away from appwrite? You can now use:
+                      <div className="flex flex-col">
+                      <code>db.exportToSQL()</code>
+                      <code>db.exportToFirebase()</code>
+                      <code>db.exportToText()</code>
+                      To migrate into other formats.
+                      </div>
+                    </p>
+                  </div>
+                </motion.li>
+              </ul>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Future Plans Section */}
         <motion.div

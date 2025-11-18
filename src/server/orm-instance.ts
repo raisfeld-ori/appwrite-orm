@@ -14,7 +14,9 @@ export class ServerORMInstance<T extends TableDefinition[]> {
     private databases: Databases,
     private databaseId: string,
     private schemas: Map<string, DatabaseSchema>,
-    private collectionIds: Map<string, string> = new Map()
+    private collectionIds: Map<string, string> = new Map(),
+    private migration?: any,
+    private tableDefinitions?: T
   ) {
     // Initialize table instances
     for (const [name, schema] of schemas.entries()) {
@@ -226,5 +228,41 @@ export class ServerORMInstance<T extends TableDefinition[]> {
     
     // Filter out results where joined data is null
     return results.filter((doc: any) => doc[joinAlias] !== null);
+  }
+
+  /**
+   * Export schema to SQL format
+   * @returns SQL CREATE TABLE statements as a string
+   * @throws Error if migration instance is not available
+   */
+  exportToSQL(): string {
+    if (!this.migration || !this.tableDefinitions) {
+      throw new Error('Export functionality requires migration instance and table definitions');
+    }
+    return this.migration.exportToSQL(this.tableDefinitions);
+  }
+
+  /**
+   * Export schema to Firebase format
+   * @returns Firebase security rules and structure as a JSON string
+   * @throws Error if migration instance is not available
+   */
+  exportToFirebase(): string {
+    if (!this.migration || !this.tableDefinitions) {
+      throw new Error('Export functionality requires migration instance and table definitions');
+    }
+    return this.migration.exportToFirebase(this.tableDefinitions);
+  }
+
+  /**
+   * Export schema to text format
+   * @returns Human-readable text description of the schema
+   * @throws Error if migration instance is not available
+   */
+  exportToText(): string {
+    if (!this.migration || !this.tableDefinitions) {
+      throw new Error('Export functionality requires migration instance and table definitions');
+    }
+    return this.migration.exportToText(this.tableDefinitions);
   }
 }
