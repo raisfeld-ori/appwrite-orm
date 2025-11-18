@@ -1,9 +1,13 @@
+![Appwrite ORM Logo](https://raw.githubusercontent.com/raisfeld-ori/appwrite-orm/main/logo.png)
+
 # Appwrite ORM
 
 [![npm version](https://badge.fury.io/js/appwrite-orm.svg)](https://www.npmjs.com/package/appwrite-orm)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A powerful, type-safe TypeScript ORM for Appwrite with automatic migrations, schema validation, indexes, and join support. Works seamlessly in both server-side (Node.js) and client-side (browser) environments.
+
+🌐 **[Try the Interactive Demo](https://appwrite-orm.online)** - Experience Appwrite ORM in action with live examples!
 
 ## Features
 
@@ -123,6 +127,7 @@ npm run test:integration
 
 ## Documentation
 
+- [Interactive Demo](https://appwrite-orm.online) - Try it live in your browser
 - [Full Documentation](https://appwrite-orm.readthedocs.io)
 - [API Reference](https://appwrite-orm.readthedocs.io/api/overview/)
 - [GitHub Repository](https://github.com/raisfeld-ori/appwrite-orm)
