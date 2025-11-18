@@ -12,6 +12,6 @@ export { PermissionManager } from './permission-manager';
 export { DatabasesWrapper, ClientWrapper } from './appwrite-extended';
 
 // Re-export Appwrite utilities and shared types
-export { Query } from 'node-appwrite';
+export { Query as ServerQuery } from 'node-appwrite';
 export * from '../shared/types';
 export * from '../shared/table';
