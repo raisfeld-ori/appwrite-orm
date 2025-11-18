@@ -174,3 +174,5 @@ const orm = new WebORM({
 - [CRUD Operations](crud-operations.md)
 - [Queries](queries.md)
 - [Development Mode](development-mode.md)
+- [Caching](caching.md)
+- [Realtime Listeners](listeners.md)

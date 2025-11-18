@@ -67,6 +67,6 @@ export class ServerORM {
       await this.migration.validate(tables);
     }
 
-    return new ServerORMInstance(this.databases, this.config.databaseId, this.schemas, this.collectionIds, this.migration, tables);
+    return new ServerORMInstance(this.databases, this.config.databaseId, this.schemas, this.collectionIds, this.migration, tables, this.client, this.config);
   }
 }

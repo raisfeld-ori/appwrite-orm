@@ -13,10 +13,12 @@ export class ServerTable<T extends DatabaseSchema, TInterface = SchemaToType<T>>
     databases: Databases,
     databaseId: string,
     collectionId: string,
-    schema: T
+    schema: T,
+    client?: any,
+    config?: any
   ) {
     // Type assertion needed because node-appwrite and appwrite have compatible but different types
-    super(databases as any, databaseId, collectionId, schema);
+    super(databases as any, databaseId, collectionId, schema, client, config);
     this.db = new DatabasesWrapper(databases);
   }
 

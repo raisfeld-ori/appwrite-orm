@@ -300,6 +300,38 @@ await db.table('users').bulkUpdate([
 await db.table('users').bulkDelete(['id1', 'id2', 'id3']);
 ```
 
+### Realtime Events
+
+Listen to database changes in real-time:
+
+```typescript
+// Listen to all document events in a collection
+const unsubscribe = db.table('users').listenToDocuments((event) => {
+  if (event.events.some(e => e.includes('.create'))) {
+    console.log('New user created:', event.payload);
+  } else if (event.events.some(e => e.includes('.update'))) {
+    console.log('User updated:', event.payload);
+  } else if (event.events.some(e => e.includes('.delete'))) {
+    console.log('User deleted:', event.payload);
+  }
+});
+
+// Listen to specific document
+const unsubscribeUser = db.table('users').listenToDocument('user123', (event) => {
+  console.log('User 123 changed:', event.payload);
+});
+
+// Custom channel listening
+const unsubscribeUpdates = db.table('users').listen('documents.*.update', (event) => {
+  console.log('Any user update:', event.payload);
+});
+
+// Don't forget to unsubscribe when done
+// unsubscribe();
+// unsubscribeUser();
+// unsubscribeUpdates();
+```
+
 ## 📖 Documentation
 
 - [Installation Guide](https://appwrite-orm.readthedocs.io/getting-started/installation/)

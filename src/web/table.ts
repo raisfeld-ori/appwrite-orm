@@ -8,9 +8,11 @@ export class WebTable<T extends DatabaseSchema, TInterface = SchemaToType<T>> ex
     databases: Databases,
     databaseId: string,
     collectionId: string,
-    schema: T
+    schema: T,
+    client?: any,
+    config?: any
   ) {
-    super(databases, databaseId, collectionId, schema);
+    super(databases, databaseId, collectionId, schema, client, config);
   }
 
   /**

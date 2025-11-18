@@ -16,12 +16,14 @@ export class ServerORMInstance<T extends TableDefinition[]> {
     private schemas: Map<string, DatabaseSchema>,
     private collectionIds: Map<string, string> = new Map(),
     private migration?: any,
-    private tableDefinitions?: T
+    private tableDefinitions?: T,
+    private client?: any,
+    private config?: any
   ) {
     // Initialize table instances
     for (const [name, schema] of schemas.entries()) {
       const collectionId = collectionIds.get(name) || name;
-      const table = new ServerTable(databases, databaseId, collectionId, schema);
+      const table = new ServerTable(databases, databaseId, collectionId, schema, client, config);
       this.tables.set(name, table);
     }
   }
@@ -264,5 +266,16 @@ export class ServerORMInstance<T extends TableDefinition[]> {
       throw new Error('Export functionality requires migration instance and table definitions');
     }
     return this.migration.exportToText(this.tableDefinitions);
+  }
+
+  /**
+   * Close all listeners across all tables (useful for test cleanup)
+   */
+  closeListeners(): void {
+    Object.values(this.tables).forEach(table => {
+      if (table && typeof table.closeListeners === 'function') {
+        table.closeListeners();
+      }
+    });
   }
 }

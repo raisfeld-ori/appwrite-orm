@@ -165,3 +165,5 @@ app.listen(3000);
 - [Bulk Operations](bulk-operations.md) - Efficient batch operations
 - [Indexes](indexes.md) - Optimize query performance
 - [Migrations](migrations.md) - Export schemas to SQL, Firebase, or text
+- [Caching](caching.md) - The Built-in caching system
+- [Realtime Listeners](listeners.md) - Real-time event handling

@@ -14,12 +14,14 @@ export class WebORMInstance<T extends TableDefinition[]> {
     private databases: Databases,
     private databaseId: string,
     private schemas: Map<string, DatabaseSchema>,
-    private collectionIds: Map<string, string> = new Map()
+    private collectionIds: Map<string, string> = new Map(),
+    private client?: any,
+    private config?: any
   ) {
     // Initialize table instances
     for (const [name, schema] of schemas.entries()) {
       const collectionId = collectionIds.get(name) || name;
-      const table = new WebTable(databases, databaseId, collectionId, schema);
+      const table = new WebTable(databases, databaseId, collectionId, schema, client, config);
       this.tables.set(name, table);
     }
   }
@@ -206,5 +208,16 @@ export class WebORMInstance<T extends TableDefinition[]> {
     
     // Filter out results where joined data is null
     return results.filter((doc: any) => doc[joinAlias] !== null);
+  }
+
+  /**
+   * Close all listeners across all tables (useful for test cleanup)
+   */
+  closeListeners(): void {
+    Object.values(this.tables).forEach(table => {
+      if (table && typeof table.closeListeners === 'function') {
+        table.closeListeners();
+      }
+    });
   }
 }

@@ -42,7 +42,7 @@ export default function Home() {
 
   const futurePlans = [
     "Caching layer for improved performance on web",
-    "Advanced query builder with SQL-like syntax",
+    "A showcase of other useful appwrite extensions and software",
     "an Appwrite-ORM MCP server"
   ];
 

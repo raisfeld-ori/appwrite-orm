@@ -60,7 +60,7 @@ export class WebORM {
       await this.validateTables(tables);
     }
 
-    return new WebORMInstance(this.databases!, this.config.databaseId, this.schemas, this.collectionIds);
+    return new WebORMInstance(this.databases!, this.config.databaseId, this.schemas, this.collectionIds, this.client, this.config);
   }
 
   /**

@@ -35,37 +35,74 @@ export interface FilterOptions {
   [key: string]: unknown;
 }
 
+// Cache interface for storing query results
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  queryKey: string;
+}
+
 export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToType<T>> {
   protected databases: Databases;
   protected databaseId: string;
   protected collectionId: string;
   protected schema: T;
+  protected client?: any; // Appwrite Client instance
+  protected config?: any; // ORM Config
+  
+  // Cache and update tracking
+  private cache: Map<string, CacheEntry<any>> = new Map();
+  private updated: boolean = true; // Initially true to force first query
+  private realtimeUnsubscribe?: () => void;
+  private manualListeners: (() => void)[] = [];
 
   constructor(
     databases: Databases,
     databaseId: string,
     collectionId: string,
-    schema: T
+    schema: T,
+    client?: any,
+    config?: any
   ) {
     this.databases = databases;
     this.databaseId = databaseId;
     this.collectionId = collectionId;
     this.schema = schema;
+    this.client = client;
+    this.config = config;
+    
+    // Set up automatic realtime listening for cache invalidation
+    this.setupRealtimeTracking();
   }
 
   /**
    * Get a single document by ID (similar to SQLAlchemy's get)
    */
   async get(id: string): Promise<TInterface | null> {
+    const cacheKey = this.generateCacheKey('get', [id]);
+    
+    // Try to get from cache first
+    const cached = this.getFromCache<TInterface | null>(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
     try {
       const result = await this.databases.getDocument(
         this.databaseId,
         this.collectionId,
         id
       );
-      return result as TInterface;
+      const typedResult = result as TInterface;
+      
+      // Cache the result
+      this.setCache(cacheKey, typedResult);
+      
+      return typedResult;
     } catch (error: unknown) {
       if (error instanceof Error && 'code' in error && (error as any).code === 404) {
+        // Cache null result for 404s
+        this.setCache(cacheKey, null);
         return null;
       }
       throw error;
@@ -87,6 +124,14 @@ export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToT
    * Query documents with filters (similar to SQLAlchemy's filter)
    */
   async query(filters?: FilterOptions, options?: QueryOptions): Promise<TInterface[]> {
+    const cacheKey = this.generateCacheKey('query', [filters, options]);
+    
+    // Try to get from cache first
+    const cached = this.getFromCache<TInterface[]>(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
     const queries: string[] = [];
 
     // Build filter queries
@@ -130,22 +175,53 @@ export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToT
       queries
     );
 
-    return result.documents as TInterface[];
+    const typedResult = result.documents as TInterface[];
+    
+    // Cache the result
+    this.setCache(cacheKey, typedResult);
+
+    return typedResult;
   }
 
   /**
    * Get all documents (similar to SQLAlchemy's all())
    */
   async all(options?: QueryOptions): Promise<TInterface[]> {
-    return this.query(undefined, options);
+    const cacheKey = this.generateCacheKey('all', [options]);
+    
+    // Try to get from cache first
+    const cached = this.getFromCache<TInterface[]>(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
+    const result = await this.query(undefined, options);
+    
+    // Cache the result (query method already caches, but we cache with 'all' key too)
+    this.setCache(cacheKey, result);
+    
+    return result;
   }
 
   /**
    * Get first document matching filters (similar to SQLAlchemy's first())
    */
   async first(filters?: FilterOptions): Promise<TInterface | null> {
+    const cacheKey = this.generateCacheKey('first', [filters]);
+    
+    // Try to get from cache first
+    const cached = this.getFromCache<TInterface | null>(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
     const results = await this.query(filters, { limit: 1 });
-    return results.length > 0 ? results[0] : null;
+    const result = results.length > 0 ? results[0] : null;
+    
+    // Cache the result
+    this.setCache(cacheKey, result);
+    
+    return result;
   }
 
   /**
@@ -163,6 +239,14 @@ export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToT
    * Count documents matching filters (similar to SQLAlchemy's count())
    */
   async count(filters?: FilterOptions): Promise<number> {
+    const cacheKey = this.generateCacheKey('count', [filters]);
+    
+    // Try to get from cache first
+    const cached = this.getFromCache<number>(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
     const queries: string[] = [];
 
     if (filters) {
@@ -180,7 +264,12 @@ export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToT
       queries
     );
 
-    return result.total;
+    const count = result.total;
+    
+    // Cache the result
+    this.setCache(cacheKey, count);
+
+    return count;
   }
 
   /**
@@ -196,6 +285,9 @@ export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToT
       ID.unique(),
       data as Record<string, unknown>
     );
+
+    // Invalidate cache since data has changed
+    this.setUpdated(false);
 
     return result as TInterface;
   }
@@ -214,6 +306,9 @@ export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToT
       data as Record<string, unknown>
     );
 
+    // Invalidate cache since data has changed
+    this.setUpdated(false);
+
     return result as TInterface;
   }
 
@@ -226,28 +321,298 @@ export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToT
       this.collectionId,
       id
     );
+
+    // Invalidate cache since data has changed
+    this.setUpdated(false);
   }
 
   /**
    * Find documents with more complex queries
    */
   async find(queries: string[]): Promise<TInterface[]> {
+    const cacheKey = this.generateCacheKey('find', [queries]);
+    
+    // Try to get from cache first
+    const cached = this.getFromCache<TInterface[]>(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
     const result = await this.databases.listDocuments(
       this.databaseId,
       this.collectionId,
       queries
     );
 
-    return result.documents as TInterface[];
+    const typedResult = result.documents as TInterface[];
+    
+    // Cache the result
+    this.setCache(cacheKey, typedResult);
+
+    return typedResult;
   }
 
   /**
    * Find one document with complex queries
    */
   async findOne(queries: string[]): Promise<TInterface | null> {
+    const cacheKey = this.generateCacheKey('findOne', [queries]);
+    
+    // Try to get from cache first
+    const cached = this.getFromCache<TInterface | null>(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
     const queriesWithLimit = [...queries, Query.limit(1)];
     const results = await this.find(queriesWithLimit);
-    return results.length > 0 ? results[0] : null;
+    const result = results.length > 0 ? results[0] : null;
+    
+    // Cache the result
+    this.setCache(cacheKey, result);
+    
+    return result;
+  }
+
+  /**
+   * Set up automatic realtime tracking for cache invalidation
+   */
+  private setupRealtimeTracking(): void {
+    if (!this.client || typeof this.client.subscribe !== 'function') {
+      return; // No client available or client doesn't support realtime, skip realtime tracking
+    }
+
+    try {
+      // Listen to all database events that could affect this collection
+      const channels = [
+        `databases.${this.databaseId}.collections.${this.collectionId}.documents`,
+        `databases.${this.databaseId}.collections.${this.collectionId}`,
+        `databases.${this.databaseId}`
+      ];
+
+      // Subscribe to multiple channels for comprehensive event coverage
+      this.realtimeUnsubscribe = this.client.subscribe(channels, (event: any) => {
+        this.handleRealtimeEvent(event);
+      });
+    } catch (error) {
+      // Silently fail if realtime is not available
+      console.warn('Realtime tracking setup failed:', error);
+    }
+  }
+
+  /**
+   * Handle realtime events for cache invalidation
+   */
+  private handleRealtimeEvent(event: any): void {
+    // Check if the event affects this collection
+    const affectsThisCollection = event.events?.some((eventName: string) => {
+      return eventName.includes(`collections.${this.collectionId}`) ||
+             eventName.includes(`databases.${this.databaseId}`);
+    });
+
+    if (affectsThisCollection) {
+      // Mark as updated (data has changed)
+      this.updated = false;
+      
+      // Clear cache since data has changed
+      this.clearCache();
+    }
+  }
+
+  /**
+   * Generate a cache key for a query
+   */
+  private generateCacheKey(method: string, params: any[]): string {
+    return `${method}:${JSON.stringify(params)}`;
+  }
+
+  /**
+   * Get data from cache if available and valid
+   */
+  private getFromCache<R>(cacheKey: string): R | null {
+    if (!this.updated) {
+      // Data has changed, cache is invalid
+      return null;
+    }
+
+    const entry = this.cache.get(cacheKey);
+    if (!entry) {
+      return null;
+    }
+
+    // Optional: Add TTL (time-to-live) check
+    const maxAge = 5 * 60 * 1000; // 5 minutes
+    if (Date.now() - entry.timestamp > maxAge) {
+      this.cache.delete(cacheKey);
+      return null;
+    }
+
+    return entry.data;
+  }
+
+  /**
+   * Store data in cache
+   */
+  private setCache<R>(cacheKey: string, data: R): void {
+    this.cache.set(cacheKey, {
+      data,
+      timestamp: Date.now(),
+      queryKey: cacheKey
+    });
+    
+    // Mark as updated (cache is now fresh)
+    this.updated = true;
+  }
+
+  /**
+   * Clear all cache entries
+   */
+  private clearCache(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * Get the current updated status
+   */
+  public isUpdated(): boolean {
+    return this.updated;
+  }
+
+  /**
+   * Manually mark data as updated or not updated
+   */
+  public setUpdated(updated: boolean): void {
+    this.updated = updated;
+    if (!updated) {
+      this.clearCache();
+    }
+  }
+
+  /**
+   * Listen to realtime events for this collection
+   * @param channel - The channel to listen to (e.g., 'documents', 'documents.{documentId}')
+   * @param onEvent - Callback function to handle events
+   * @returns A function to unsubscribe from the channel
+   */
+  listen(channel: string, onEvent: (event: any) => void): () => void {
+    if (!this.client || typeof this.client.subscribe !== 'function') {
+      throw new Error('Client not available for realtime functionality. Make sure client is passed to the table constructor.');
+    }
+
+    // Construct the full channel path
+    const fullChannel = `databases.${this.databaseId}.collections.${this.collectionId}.${channel}`;
+    
+    // Subscribe to the channel
+    const unsubscribe = this.client.subscribe(fullChannel, onEvent);
+    
+    // Track this listener for cleanup
+    this.manualListeners.push(unsubscribe);
+    
+    // Return a wrapped unsubscribe function that also removes from tracking
+    return () => {
+      const index = this.manualListeners.indexOf(unsubscribe);
+      if (index > -1) {
+        this.manualListeners.splice(index, 1);
+      }
+      unsubscribe();
+    };
+  }
+
+  /**
+   * Listen to all document events in this collection
+   * @param onEvent - Callback function to handle events
+   * @returns A function to unsubscribe from the channel
+   */
+  listenToDocuments(onEvent: (event: any) => void): () => void {
+    return this.listen('documents', onEvent);
+  }
+
+  /**
+   * Listen to events for a specific document in this collection
+   * @param documentId - The ID of the document to listen to
+   * @param onEvent - Callback function to handle events
+   * @returns A function to unsubscribe from the channel
+   */
+  listenToDocument(documentId: string, onEvent: (event: any) => void): () => void {
+    return this.listen(`documents.${documentId}`, onEvent);
+  }
+
+  /**
+   * Listen to database-level events
+   * @param onEvent - Callback function to handle events
+   * @returns A function to unsubscribe from the channel
+   */
+  listenToDatabase(onEvent: (event: any) => void): () => void {
+    if (!this.client || typeof this.client.subscribe !== 'function') {
+      throw new Error('Client not available for realtime functionality. Make sure client is passed to the table constructor.');
+    }
+
+    const channel = `databases.${this.databaseId}`;
+    const unsubscribe = this.client.subscribe(channel, onEvent);
+    
+    // Track this listener for cleanup
+    this.manualListeners.push(unsubscribe);
+    
+    // Return a wrapped unsubscribe function that also removes from tracking
+    return () => {
+      const index = this.manualListeners.indexOf(unsubscribe);
+      if (index > -1) {
+        this.manualListeners.splice(index, 1);
+      }
+      unsubscribe();
+    };
+  }
+
+  /**
+   * Listen to collection-level events
+   * @param onEvent - Callback function to handle events
+   * @returns A function to unsubscribe from the channel
+   */
+  listenToCollection(onEvent: (event: any) => void): () => void {
+    if (!this.client || typeof this.client.subscribe !== 'function') {
+      throw new Error('Client not available for realtime functionality. Make sure client is passed to the table constructor.');
+    }
+
+    const channel = `databases.${this.databaseId}.collections.${this.collectionId}`;
+    const unsubscribe = this.client.subscribe(channel, onEvent);
+    
+    // Track this listener for cleanup
+    this.manualListeners.push(unsubscribe);
+    
+    // Return a wrapped unsubscribe function that also removes from tracking
+    return () => {
+      const index = this.manualListeners.indexOf(unsubscribe);
+      if (index > -1) {
+        this.manualListeners.splice(index, 1);
+      }
+      unsubscribe();
+    };
+  }
+
+  /**
+   * Close all manual listeners (for cleanup in tests)
+   */
+  public closeListeners(): void {
+    // Close all manual listeners
+    this.manualListeners.forEach(unsubscribe => {
+      try {
+        unsubscribe();
+      } catch (error) {
+        // Silently ignore errors during cleanup
+      }
+    });
+    this.manualListeners = [];
+  }
+
+  /**
+   * Clean up realtime subscriptions
+   */
+  public destroy(): void {
+    if (this.realtimeUnsubscribe) {
+      this.realtimeUnsubscribe();
+    }
+    this.closeListeners();
+    this.clearCache();
   }
 
   /**

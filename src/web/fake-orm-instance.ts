@@ -201,4 +201,15 @@ export class FakeORMInstance<T extends TableDefinition[]> {
   clearAll(): void {
     this.fakeDb.clearDatabase();
   }
+
+  /**
+   * Close all listeners across all tables (useful for test cleanup)
+   */
+  closeListeners(): void {
+    Object.values(this.tables).forEach(table => {
+      if (table && typeof table.closeListeners === 'function') {
+        table.closeListeners();
+      }
+    });
+  }
 }
