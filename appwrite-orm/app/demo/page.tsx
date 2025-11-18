@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Database, BookOpen, Github } from "lucide-react";
+import { Database, BookOpen, Github, Radio } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { CursorEffect } from "../components/cursor-effect";
 import { CrudDemo } from "./components/CrudDemo";
 import { MigrationsDemo } from "./components/MigrationsDemo";
+import { ListenersDemo } from "./components/ListenersDemo";
 import { cn } from "@/lib/utils";
 
-type DemoCategory = 'crud' | 'migrations';
+type DemoCategory = 'crud' | 'migrations' | 'listeners';
 
 export default function DemoPage() {
   const [activeCategory, setActiveCategory] = useState<DemoCategory>('crud');
@@ -141,6 +142,20 @@ export default function DemoPage() {
                 Migrations
               </span>
             </button>
+            <button
+              onClick={() => setActiveCategory('listeners')}
+              className={cn(
+                "px-6 py-3 rounded-lg font-medium transition-all duration-300",
+                activeCategory === 'listeners'
+                  ? "bg-red-500 text-white shadow-lg"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50"
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <Radio className="h-4 w-4" />
+                Listeners
+              </span>
+            </button>
           </div>
         </motion.div>
 
@@ -153,6 +168,7 @@ export default function DemoPage() {
         >
           {activeCategory === 'crud' && <CrudDemo />}
           {activeCategory === 'migrations' && <MigrationsDemo />}
+          {activeCategory === 'listeners' && <ListenersDemo />}
         </motion.div>
 
         {/* Footer Note */}

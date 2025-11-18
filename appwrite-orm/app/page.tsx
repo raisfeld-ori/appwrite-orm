@@ -41,9 +41,9 @@ export default function Home() {
   ];
 
   const futurePlans = [
-    "Caching layer for improved performance on web",
     "A showcase of other useful appwrite extensions and software",
-    "an Appwrite-ORM MCP server"
+    "An Appwrite-ORM MCP server",
+    "Optimize code quality, security and optimize for production"
   ];
 
   const codeExample = `import { ServerORM } from 'appwrite-orm/server';
@@ -339,7 +339,7 @@ const user = await db.table('users').create({
               New Features
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              Latest additions in the current version (0.2.5)
+              Latest additions in the current version (0.3.1)
             </p>
           </div>
 
@@ -362,13 +362,10 @@ const user = await db.table('users').create({
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Export to SQL / Firebase / Text</h3>
                     <div className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                      <p className="mb-2">Want to switch away from appwrite? You can now use:</p>
-                      <div className="flex flex-col space-y-1 font-mono text-sm">
-                        <code>db.exportToSQL()</code>
-                        <code>db.exportToFirebase()</code>
-                        <code>db.exportToText()</code>
+                      <div className="flex flex-col">
+                        <p>Migrations from Appwrite to SQL, Firebase and text. So you're never stuck on 1 of these</p>
+                        <p>Built-in Caching system for appwrite</p>
                       </div>
-                      <p className="mt-2">To migrate into other formats.</p>
                     </div>
                   </div>
                 </motion.li>
