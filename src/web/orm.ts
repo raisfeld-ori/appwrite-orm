@@ -2,12 +2,10 @@ import { Client, Databases } from 'appwrite';
 import { TableDefinition, ORMConfig, DatabaseSchema, validateRequiredConfig, ORMMigrationError } from '../shared/types';
 import { WebORMInstance } from './orm-instance';
 import { FakeORMInstance } from './fake-orm-instance';
-import { DatabasesWrapper } from '../server/appwrite-extended';
 
 export class WebORM {
   private client?: Client;
   private databases?: Databases;
-  private db?: DatabasesWrapper;
   private config: ORMConfig;
   private schemas: Map<string, DatabaseSchema> = new Map();
   private collectionIds: Map<string, string> = new Map(); // Map table name to collection ID
@@ -32,9 +30,6 @@ export class WebORM {
         .setProject(config.projectId);
       
       this.databases = new Databases(this.client);
-      // Type assertion needed because DatabasesWrapper expects node-appwrite types
-      // but at runtime they're compatible for the operations we use
-      this.db = new DatabasesWrapper(this.databases as any);
     }
   }
 
@@ -65,9 +60,10 @@ export class WebORM {
 
   /**
    * Validate that collections exist in the database
+   * Note: Web SDK doesn't support getCollection, so we validate by attempting to list documents
    */
   private async validateTables(tables: TableDefinition[]): Promise<void> {
-    if (!this.db) {
+    if (!this.databases) {
       throw new ORMMigrationError('Database client not initialized');
     }
 
@@ -75,11 +71,10 @@ export class WebORM {
       for (const table of tables) {
         const collectionId = table.id || table.name;
         try {
-          // Try to get the collection to verify it exists
-          await this.db.getCollection(this.config.databaseId, collectionId);
-        } catch (error) {
+          await this.databases.listDocuments(this.config.databaseId, collectionId, []);
+        } catch (error: any) {
           throw new ORMMigrationError(
-            `Received this internal error: ${error}. Are you sure this collection exists?`
+            `Collection '${collectionId}' not found or not accessible. Make sure the collection exists and has proper read permissions. Error: ${error?.message || error}`
           );
         }
       }
