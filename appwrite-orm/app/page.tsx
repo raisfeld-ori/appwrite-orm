@@ -27,8 +27,8 @@ export default function Home() {
     },
     {
       icon: MoveDownIcon,
-      title: "Minimal package size",
-      description: "Only dependent on appwrite and node-appwrite, making for a small package size",
+      title: "Custom MCP server",
+      description: "A custom MCP server, so your AI model doesn't make stuff up about Appwrite-ORM",
     },
     {
       icon: GitBranch,
@@ -43,9 +43,9 @@ export default function Home() {
   ];
 
   const futurePlans = [
-    "An Appwrite-ORM MCP server",
     "Optimize code quality, security and optimize for production",
-    "Better error handling"
+    "Better error handling",
+    "Make the code battle ready for production"
   ];
 
   const codeExample = `import { ServerORM } from 'appwrite-orm/server';
