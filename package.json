@@ -1,6 +1,6 @@
 {
   "name": "appwrite-orm",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "A powerful TypeScript ORM for Appwrite with type-safe schemas, auto-migration, validation, indexes, and join support for both server and web environments",
   "main": "dist/index.js",
   "readme": "https://appwrite-orm.readthedocs.io",
@@ -30,6 +30,9 @@
       "types": "./dist/server/index.d.ts"
     }
   },
+  "bin": {
+    "appwrite-mcp": "./mcp/build/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest",
@@ -37,12 +40,15 @@
     "test:integration": "jest tests/integration --detectOpenHandles --forceExit",
     "test:usage": "ts-node scripts/usage_tests.ts",
     "dev": "tsc --watch",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build && npm run mcp:build",
     "publish": "npm publish",
     "docs:serve": "mkdocs serve",
     "docs:build": "mkdocs build",
-    "docs:deploy": "mkdocs gh-deploy"
+    "docs:deploy": "mkdocs gh-deploy",
+    "mcp:build": "tsc -p ./mcp/tsconfig.json",
+    "mcp:dev": "npm run mcp:build && node ./mcp/build/index.js"
   },
+  
   "keywords": [
     "appwrite",
     "orm",
@@ -87,14 +93,17 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.22.0",
     "appwrite": ">=13.0.0",
-    "node-appwrite": "^20.3.0"
+    "node-appwrite": "^20.3.0",
+    "zod": "^3.25.76"
   },
   "peerDependencies": {
     "appwrite": ">=13.0.0"
   },
   "files": [
     "dist",
+    "mcp/build",
     "README.md",
     "LICENSE"
   ]
