@@ -3,6 +3,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.initializeDocs = initializeDocs;
 const zod_1 = require("zod");
 const BASE_URL = "https://appwrite-orm.readthedocs.io/en/latest/";
+async function fetchDocumentation(url) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            return `Failed to fetch documentation: ${response.status} ${response.statusText}`;
+        }
+        const html = await response.text();
+        // Extract text content from HTML (basic extraction)
+        // Remove script and style tags
+        let text = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        text = text.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+        // Remove HTML tags
+        text = text.replace(/<[^>]+>/g, ' ');
+        // Decode HTML entities
+        text = text.replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'");
+        // Clean up whitespace
+        text = text.replace(/\s+/g, ' ').trim();
+        return text;
+    }
+    catch (error) {
+        return `Error fetching documentation: ${error instanceof Error ? error.message : String(error)}`;
+    }
+}
 const serverDocs = {
     "setup": { route: "/server/setup/", description: "Setup the Appwrite ORM on the server side" },
     "CRUD": { route: "/server/crud-operations/", description: "CRUD operations (Create, Read, Update, Delete)" },
@@ -50,11 +78,12 @@ function initializeDocs(server) {
     Object.entries(serverDocs).forEach(([key, value]) => {
         server.tool(`server-${key}`, value.description, {}, async () => {
             const url = BASE_URL + value.route;
+            const docContent = await fetchDocumentation(url);
             return {
                 content: [
                     {
                         type: "text",
-                        text: `Documentation for Server ${key}:\n\nURL: ${url}\n\nDescription: ${value.description}\n\nVisit the URL for detailed documentation.`
+                        text: `Documentation for Server ${key}:\n\nURL: ${url}\n\nDescription: ${value.description}\n\n--- DOCUMENTATION CONTENT ---\n\n${docContent}`
                     }
                 ]
             };
@@ -64,11 +93,12 @@ function initializeDocs(server) {
     Object.entries(webDocs).forEach(([key, value]) => {
         server.tool(`web-${key}`, value.description, {}, async () => {
             const url = BASE_URL + value.route;
+            const docContent = await fetchDocumentation(url);
             return {
                 content: [
                     {
                         type: "text",
-                        text: `Documentation for Web ${key}:\n\nURL: ${url}\n\nDescription: ${value.description}\n\nVisit the URL for detailed documentation.`
+                        text: `Documentation for Web ${key}:\n\nURL: ${url}\n\nDescription: ${value.description}\n\n--- DOCUMENTATION CONTENT ---\n\n${docContent}`
                     }
                 ]
             };
@@ -93,11 +123,12 @@ function initializeDocs(server) {
             };
         }
         const url = BASE_URL + docEntry.route;
+        const docContent = await fetchDocumentation(url);
         return {
             content: [
                 {
                     type: "text",
-                    text: `Documentation for ${category} ${topic}:\n\nURL: ${url}\n\nDescription: ${docEntry.description}\n\nVisit the URL for detailed documentation.`
+                    text: `Documentation for ${category} ${topic}:\n\nURL: ${url}\n\nDescription: ${docEntry.description}\n\n--- DOCUMENTATION CONTENT ---\n\n${docContent}`
                 }
             ]
         };
