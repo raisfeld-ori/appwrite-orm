@@ -55,6 +55,7 @@ export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToT
   private updated: boolean = true; // Initially true to force first query
   private realtimeUnsubscribe?: () => void;
   private manualListeners: (() => void)[] = [];
+  private messages: string[] = [];
 
   constructor(
     databases: Databases,
@@ -395,8 +396,8 @@ export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToT
         this.handleRealtimeEvent(event);
       });
     } catch (error) {
-      // Silently fail if realtime is not available
-      console.warn('Realtime tracking setup failed:', error);
+      // Record failure for diagnostics (do not log to console)
+      this.messages.push(`Realtime tracking setup failed: ${String(error)}`);
     }
   }
 
@@ -478,6 +479,10 @@ export abstract class BaseTable<T extends DatabaseSchema, TInterface = SchemaToT
     return this.updated;
   }
 
+  /** Return collected internal messages (warnings, diagnostics) */
+  public getMessages(): string[] {
+    return [...this.messages];
+  }
   /**
    * Manually mark data as updated or not updated
    */

@@ -5,6 +5,9 @@ import * as dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
+// Increase default Jest timeout for slow integration tests
+jest.setTimeout(120000);
+
 // Interface definitions for type-safe responses
 interface User {
   $id: string;

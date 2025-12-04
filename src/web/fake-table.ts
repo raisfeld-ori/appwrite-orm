@@ -11,6 +11,7 @@ export class FakeTable<T extends DatabaseSchema, TInterface = any> {
   private lastSnapshot: any[] = [];
   private pollInterval?: NodeJS.Timeout;
   private updated: boolean = true;
+  private messages: string[] = [];
 
   constructor(
     private fakeDb: FakeDatabaseClient,
@@ -107,7 +108,7 @@ export class FakeTable<T extends DatabaseSchema, TInterface = any> {
    * Note: In development mode, only basic equality filters work through query()
    */
   async find(queries: string[]): Promise<TInterface[]> {
-    console.warn('[AppwriteORM Development Mode] Advanced Appwrite queries are not fully supported. Use query() with simple filters instead.');
+    this.messages.push('[AppwriteORM Development Mode] Advanced Appwrite queries are not fully supported. Use query() with simple filters instead.');
     return this.all();
   }
 
@@ -216,7 +217,7 @@ export class FakeTable<T extends DatabaseSchema, TInterface = any> {
       try {
         listener(event);
       } catch (error) {
-        console.warn('[FakeTable] Error in event listener:', error);
+        this.messages.push(`[FakeTable] Error in event listener: ${String(error)}`);
       }
     });
 
@@ -226,7 +227,7 @@ export class FakeTable<T extends DatabaseSchema, TInterface = any> {
       try {
         listener(event);
       } catch (error) {
-        console.warn('[FakeTable] Error in event listener:', error);
+        this.messages.push(`[FakeTable] Error in event listener: ${String(error)}`);
       }
     });
 
@@ -242,7 +243,7 @@ export class FakeTable<T extends DatabaseSchema, TInterface = any> {
       try {
         listener(collectionEvent);
       } catch (error) {
-        console.warn('[FakeTable] Error in event listener:', error);
+        this.messages.push(`[FakeTable] Error in event listener: ${String(error)}`);
       }
     });
 
@@ -258,7 +259,7 @@ export class FakeTable<T extends DatabaseSchema, TInterface = any> {
       try {
         listener(databaseEvent);
       } catch (error) {
-        console.warn('[FakeTable] Error in event listener:', error);
+        this.messages.push(`[FakeTable] Error in event listener: ${String(error)}`);
       }
     });
   }
@@ -294,27 +295,27 @@ export class FakeTable<T extends DatabaseSchema, TInterface = any> {
    * Realtime methods (functional in development mode with mock data)
    */
   listen(channel: string, onEvent: (event: any) => void): () => void {
-    console.log(`[FakeTable] Listening to channel: databases.fake-db.collections.${this.collectionId}.${channel}`);
+    this.messages.push(`Listening to channel: databases.fake-db.collections.${this.collectionId}.${channel}`);
     return this.addListener(channel, onEvent);
   }
 
   listenToDocuments(onEvent: (event: any) => void): () => void {
-    console.log(`[FakeTable] Listening to all documents in collection: ${this.collectionId}`);
+    this.messages.push(`Listening to all documents in collection: ${this.collectionId}`);
     return this.addListener('documents', onEvent);
   }
 
   listenToDocument(documentId: string, onEvent: (event: any) => void): () => void {
-    console.log(`[FakeTable] Listening to document: ${documentId} in collection: ${this.collectionId}`);
+    this.messages.push(`Listening to document: ${documentId} in collection: ${this.collectionId}`);
     return this.addListener(`documents.${documentId}`, onEvent);
   }
 
   listenToCollection(onEvent: (event: any) => void): () => void {
-    console.log(`[FakeTable] Listening to collection: ${this.collectionId}`);
+    this.messages.push(`Listening to collection: ${this.collectionId}`);
     return this.addListener('collection', onEvent);
   }
 
   listenToDatabase(onEvent: (event: any) => void): () => void {
-    console.log(`[FakeTable] Listening to database events`);
+    this.messages.push(`Listening to database events`);
     return this.addListener('database', onEvent);
   }
 
@@ -342,12 +343,19 @@ export class FakeTable<T extends DatabaseSchema, TInterface = any> {
       this.pollInterval = undefined;
     }
     
-    console.log(`[FakeTable] Closed listeners and polling for collection: ${this.collectionId}`);
+    this.messages.push(`Closed listeners and polling for collection: ${this.collectionId}`);
   }
 
   destroy(): void {
     this.closeListeners();
-    console.log(`[FakeTable] Destroyed listeners and polling for collection: ${this.collectionId}`);
+    this.messages.push(`Destroyed listeners and polling for collection: ${this.collectionId}`);
+  }
+
+  /**
+   * Return collected internal messages (warnings, listener errors, actions)
+   */
+  getMessages(): string[] {
+    return [...this.messages];
   }
 
   /**

@@ -24,6 +24,7 @@ interface FakeDatabase {
 export class FakeDatabaseClient {
   private static readonly COOKIE_PREFIX = 'appwrite_orm_dev_';
   private static readonly MAX_COOKIE_SIZE = 4000; // Stay under 4KB cookie limit
+  private lastWarning: string | null = null;
 
   constructor(private databaseId: string) {}
 
@@ -55,25 +56,26 @@ export class FakeDatabaseClient {
   /**
    * Save the database to cookies
    */
-  private saveDatabase(db: FakeDatabase): void {
+  private saveDatabase(db: FakeDatabase): string | null {
     if (typeof document === 'undefined') {
-      return; // Not in browser environment
+      return null; // Not in browser environment
     }
 
     const cookieName = `${FakeDatabaseClient.COOKIE_PREFIX}${this.databaseId}`;
     const serialized = JSON.stringify(db);
-    
+    let warning: string | null = null;
+
     // Check size and warn if too large
     if (serialized.length > FakeDatabaseClient.MAX_COOKIE_SIZE) {
-      console.warn(
-        `[AppwriteORM Development Mode] Database size (${serialized.length} bytes) exceeds recommended cookie size. ` +
-        `Consider using localStorage or reduce test data.`
-      );
+      warning = `Database size (${serialized.length} bytes) exceeds recommended cookie size. Consider using localStorage or reduce test data.`;
     }
 
     // Set cookie with 1 day expiry
     const expires = new Date(Date.now() + 86400000).toUTCString();
     document.cookie = `${cookieName}=${encodeURIComponent(serialized)}; expires=${expires}; path=/; SameSite=Strict`;
+
+    this.lastWarning = warning;
+    return warning;
   }
 
   /**
@@ -212,6 +214,13 @@ export class FakeDatabaseClient {
     collection.documents = collection.documents.filter(doc => doc.$id !== documentId);
     db[collectionId] = collection;
     this.saveDatabase(db);
+  }
+
+  /**
+   * Return last warning message (if any) produced by save operations
+   */
+  getLastWarning(): string | null {
+    return this.lastWarning;
   }
 
   /**

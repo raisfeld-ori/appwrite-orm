@@ -8,6 +8,7 @@ export class ServerORM {
   private client?: Client;
   private databases?: Databases;
   private config: ORMConfig;
+  private devInfo?: string;
   private schemas: Map<string, DatabaseSchema> = new Map();
   private collectionIds: Map<string, string> = new Map(); // Map table name to collection ID
   private migration?: Migration;
@@ -67,7 +68,7 @@ export class ServerORM {
 
     // If in development mode, return fake instance
     if (this.config.development) {
-      console.log('[AppwriteORM Server] Running in DEVELOPMENT mode - using in-memory storage');
+      this.devInfo = '[AppwriteORM Server] Running in DEVELOPMENT mode - using in-memory storage';
       return new FakeServerORMInstance(this.config.databaseId, this.schemas, this.collectionIds);
     }
 
@@ -80,5 +81,12 @@ export class ServerORM {
     }
 
     return new ServerORMInstance(this.databases!, this.config.databaseId, this.schemas, this.collectionIds, this.migration, tables, this.client, this.config);
+  }
+
+  /**
+   * When running in development, return informational message instead of logging
+   */
+  getDevInfo(): string | undefined {
+    return this.devInfo;
   }
 }

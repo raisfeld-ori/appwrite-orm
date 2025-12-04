@@ -7,6 +7,7 @@ export class WebORM {
   private client?: Client;
   private databases?: Databases;
   private config: ORMConfig;
+  private devInfo?: string;
   private schemas: Map<string, DatabaseSchema> = new Map();
   private collectionIds: Map<string, string> = new Map(); // Map table name to collection ID
 
@@ -46,16 +47,22 @@ export class WebORM {
 
     // If in development mode, return fake instance
     if (this.config.development) {
-      console.log('[AppwriteORM] Running in DEVELOPMENT mode - using cookies for data storage');
+      this.devInfo = '[AppwriteORM] Running in DEVELOPMENT mode - using cookies for data storage';
       return new FakeORMInstance(this.config.databaseId, this.schemas, this.collectionIds);
     }
-
     // Validate database structure if autoValidate is enabled
     if (this.config.autoValidate) {
       await this.validateTables(tables);
     }
 
     return new WebORMInstance(this.databases!, this.config.databaseId, this.schemas, this.collectionIds, this.client, this.config);
+  }
+
+  /**
+   * When running in development, return informational message instead of logging
+   */
+  getDevInfo(): string | undefined {
+    return this.devInfo;
   }
 
   /**

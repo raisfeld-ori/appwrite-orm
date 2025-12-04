@@ -12,6 +12,7 @@ export class FakeServerTable<T extends DatabaseSchema, TInterface = any> {
   private lastSnapshot: any[] = [];
   private pollInterval?: NodeJS.Timeout;
   private updated: boolean = true;
+  private messages: string[] = [];
 
   constructor(
     private fakeDb: FakeServerDatabaseClient,
@@ -147,7 +148,7 @@ export class FakeServerTable<T extends DatabaseSchema, TInterface = any> {
    * Find documents with Appwrite-like queries (simplified for development)
    */
   async find(queries: string[]): Promise<TInterface[]> {
-    console.warn('[FakeServerTable] Advanced Appwrite queries are not fully supported in development mode. Use query() with simple filters instead.');
+    this.messages.push('[FakeServerTable] Advanced Appwrite queries are not fully supported in development mode. Use query() with simple filters instead.');
     return this.all();
   }
 
@@ -222,14 +223,14 @@ export class FakeServerTable<T extends DatabaseSchema, TInterface = any> {
    * Create collection (no-op in fake mode)
    */
   async createCollection(name?: string, permissions?: string[]): Promise<void> {
-    console.log(`[FakeServerTable] Collection '${name || this.collectionId}' created (fake mode)`);
+    this.messages.push(`Collection '${name || this.collectionId}' created (fake mode)`);
   }
 
   /**
    * Delete collection (no-op in fake mode)
    */
   async deleteCollection(): Promise<void> {
-    console.log(`[FakeServerTable] Collection '${this.collectionId}' deleted (fake mode)`);
+    this.messages.push(`Collection '${this.collectionId}' deleted (fake mode)`);
     this.fakeDb.clearDatabase();
   }
 
@@ -237,14 +238,14 @@ export class FakeServerTable<T extends DatabaseSchema, TInterface = any> {
    * Create index (no-op in fake mode)
    */
   async createIndex(index: any): Promise<void> {
-    console.log(`[FakeServerTable] Index '${index.key}' created (fake mode)`);
+    this.messages.push(`Index '${index.key}' created (fake mode)`);
   }
 
   /**
    * Delete index (no-op in fake mode)
    */
   async deleteIndex(key: string): Promise<void> {
-    console.log(`[FakeServerTable] Index '${key}' deleted (fake mode)`);
+    this.messages.push(`Index '${key}' deleted (fake mode)`);
   }
 
   /**
@@ -341,7 +342,7 @@ export class FakeServerTable<T extends DatabaseSchema, TInterface = any> {
       try {
         listener(event);
       } catch (error) {
-        console.warn('[FakeServerTable] Error in event listener:', error);
+        this.messages.push(`[FakeServerTable] Error in event listener: ${String(error)}`);
       }
     });
 
@@ -351,7 +352,7 @@ export class FakeServerTable<T extends DatabaseSchema, TInterface = any> {
       try {
         listener(event);
       } catch (error) {
-        console.warn('[FakeServerTable] Error in event listener:', error);
+        this.messages.push(`[FakeServerTable] Error in event listener: ${String(error)}`);
       }
     });
 
@@ -367,7 +368,7 @@ export class FakeServerTable<T extends DatabaseSchema, TInterface = any> {
       try {
         listener(collectionEvent);
       } catch (error) {
-        console.warn('[FakeServerTable] Error in event listener:', error);
+        this.messages.push(`[FakeServerTable] Error in event listener: ${String(error)}`);
       }
     });
 
@@ -383,7 +384,7 @@ export class FakeServerTable<T extends DatabaseSchema, TInterface = any> {
       try {
         listener(databaseEvent);
       } catch (error) {
-        console.warn('[FakeServerTable] Error in event listener:', error);
+        this.messages.push(`[FakeServerTable] Error in event listener: ${String(error)}`);
       }
     });
   }
@@ -419,27 +420,27 @@ export class FakeServerTable<T extends DatabaseSchema, TInterface = any> {
    * Realtime methods (functional in development mode with mock data)
    */
   listen(channel: string, onEvent: (event: any) => void): () => void {
-    console.log(`[FakeServerTable] Listening to channel: databases.fake-db.collections.${this.collectionId}.${channel}`);
+    this.messages.push(`Listening to channel: databases.fake-db.collections.${this.collectionId}.${channel}`);
     return this.addListener(channel, onEvent);
   }
 
   listenToDocuments(onEvent: (event: any) => void): () => void {
-    console.log(`[FakeServerTable] Listening to all documents in collection: ${this.collectionId}`);
+    this.messages.push(`Listening to all documents in collection: ${this.collectionId}`);
     return this.addListener('documents', onEvent);
   }
 
   listenToDocument(documentId: string, onEvent: (event: any) => void): () => void {
-    console.log(`[FakeServerTable] Listening to document: ${documentId} in collection: ${this.collectionId}`);
+    this.messages.push(`Listening to document: ${documentId} in collection: ${this.collectionId}`);
     return this.addListener(`documents.${documentId}`, onEvent);
   }
 
   listenToCollection(onEvent: (event: any) => void): () => void {
-    console.log(`[FakeServerTable] Listening to collection: ${this.collectionId}`);
+    this.messages.push(`Listening to collection: ${this.collectionId}`);
     return this.addListener('collection', onEvent);
   }
 
   listenToDatabase(onEvent: (event: any) => void): () => void {
-    console.log(`[FakeServerTable] Listening to database events`);
+    this.messages.push(`Listening to database events`);
     return this.addListener('database', onEvent);
   }
 
@@ -467,12 +468,19 @@ export class FakeServerTable<T extends DatabaseSchema, TInterface = any> {
       this.pollInterval = undefined;
     }
     
-    console.log(`[FakeServerTable] Closed listeners and polling for collection: ${this.collectionId}`);
+    this.messages.push(`Closed listeners and polling for collection: ${this.collectionId}`);
   }
 
   destroy(): void {
     this.closeListeners();
-    console.log(`[FakeServerTable] Destroyed listeners and polling for collection: ${this.collectionId}`);
+    this.messages.push(`Destroyed listeners and polling for collection: ${this.collectionId}`);
+  }
+
+  /**
+   * Return collected internal messages (warnings, listener errors, actions)
+   */
+  getMessages(): string[] {
+    return [...this.messages];
   }
 
   /**
