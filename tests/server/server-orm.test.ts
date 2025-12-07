@@ -31,6 +31,13 @@ jest.mock('node-appwrite', () => {
     createBooleanAttribute: jest.fn(),
     createDatetimeAttribute: jest.fn(),
     createEnumAttribute: jest.fn(),
+    deleteAttribute: jest.fn(),
+    updateStringAttribute: jest.fn(),
+    updateIntegerAttribute: jest.fn(),
+    updateFloatAttribute: jest.fn(),
+    updateBooleanAttribute: jest.fn(),
+    updateDatetimeAttribute: jest.fn(),
+    updateEnumAttribute: jest.fn(),
     createDocument: jest.fn(),
     updateDocument: jest.fn(),
     getDocument: jest.fn(),
@@ -235,8 +242,8 @@ describe('ServerORM', () => {
       mockDatabasesInstance.getCollection.mockResolvedValueOnce({
         $id: 'users',
         attributes: [
-          { key: 'name', type: 'string' },
-          { key: 'email', type: 'string' }
+          { key: 'name', type: 'string', size: 100, required: true, array: false },
+          { key: 'email', type: 'string', size: 255, required: true, array: false }
         ]
       });
 

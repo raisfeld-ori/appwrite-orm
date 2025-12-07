@@ -55,7 +55,7 @@ export interface ORMConfig {
   apiKey?: string; // Only for server-side
   autoMigrate?: boolean; // Only for server-side
   autoValidate?: boolean; // Validate database structure on init (defaults to true, always true if autoMigrate is true)
-  development?: boolean; // For web client only - use cookies instead of Appwrite API
+  development?: boolean; // If true, uses a fake ORM for development (skips Appwrite calls and validation, uses arrays and cookies instead)
 }
 
 // Validation function for required config values

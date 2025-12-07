@@ -106,12 +106,31 @@ export class Migration {
       }
 
       // Get existing attributes
-      const existingAttributes = new Set(collection.attributes?.map((attr) => attr.key) || []);
+      const existingAttributesMap = new Map(
+        (collection.attributes || []).map((attr: any) => [attr.key, attr])
+      );
 
-      // Add new attributes
+      // Add or update attributes
       for (const [fieldName, fieldConfig] of Object.entries(table.schema)) {
-        if (!existingAttributes.has(fieldName)) {
-          await this.attributeManager.createAttribute(collectionId, fieldName, fieldConfig);
+        const existingAttr = existingAttributesMap.get(fieldName);
+        
+        if (!existingAttr) {
+          try {
+            await this.attributeManager.createAttribute(collectionId, fieldName, fieldConfig);
+          } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            if (message.includes('already exists') || message.includes('Attribute with the requested key already exists')) {
+              const updatedCollection = await this.db.getCollection(this.config.databaseId, collectionId);
+              const nowExistingAttr = updatedCollection.attributes?.find((attr: any) => attr.key === fieldName);
+              
+              if (nowExistingAttr && this.attributeManager.attributeMatches(nowExistingAttr, fieldName, fieldConfig)) {
+                continue;
+              }
+            }
+            throw error;
+          }
+        } else if (!this.attributeManager.attributeMatches(existingAttr, fieldName, fieldConfig)) {
+          await this.attributeManager.updateAttribute(collectionId, fieldName, fieldConfig, existingAttr);
         }
       }
 

@@ -202,6 +202,153 @@ export class DatabasesWrapper {
   async deleteIndex(databaseId: string, collectionId: string, key: string): Promise<void> {
     await this.databases.deleteIndex(databaseId, collectionId, key);
   }
+
+  /**
+   * Delete an attribute
+   */
+  async deleteAttribute(databaseId: string, collectionId: string, key: string): Promise<void> {
+    await this.databases.deleteAttribute(databaseId, collectionId, key);
+  }
+
+  /**
+   * Update a string attribute
+   */
+  async updateStringAttribute(
+    databaseId: string,
+    collectionId: string,
+    key: string,
+    required: boolean,
+    defaultValue?: string | null
+  ): Promise<any> {
+    const params: any = { databaseId, collectionId, key, required };
+    if (required) {
+      params.xdefault = null;
+    } else {
+      params.xdefault = defaultValue !== null && defaultValue !== undefined ? defaultValue : null;
+    }
+    return this.databases.updateStringAttribute(params);
+  }
+
+  /**
+   * Update an integer attribute
+   */
+  async updateIntegerAttribute(
+    databaseId: string,
+    collectionId: string,
+    key: string,
+    required: boolean,
+    min?: number | null,
+    max?: number | null,
+    defaultValue?: number | null
+  ): Promise<any> {
+    const params: any = { databaseId, collectionId, key, required };
+    
+    // Appwrite requires xdefault parameter in all cases
+    // When required=true: must pass null (not undefined, not omitted)
+    // When required=false: pass the value or null
+    if (required) {
+      params.xdefault = null;
+    } else {
+      params.xdefault = defaultValue !== null && defaultValue !== undefined ? defaultValue : null;
+    }
+    
+    if (min !== null && min !== undefined) {
+      params.min = min;
+    }
+    if (max !== null && max !== undefined) {
+      params.max = max;
+    }
+    
+    return this.databases.updateIntegerAttribute(params);
+  }
+
+  /**
+   * Update a float attribute
+   */
+  async updateFloatAttribute(
+    databaseId: string,
+    collectionId: string,
+    key: string,
+    required: boolean,
+    min?: number | null,
+    max?: number | null,
+    defaultValue?: number | null
+  ): Promise<any> {
+    const params: any = { databaseId, collectionId, key, required };
+    
+    if (required) {
+      params.xdefault = null;
+    } else {
+      params.xdefault = defaultValue !== null && defaultValue !== undefined ? defaultValue : null;
+    }
+    
+    if (min !== null && min !== undefined) {
+      params.min = min;
+    }
+    if (max !== null && max !== undefined) {
+      params.max = max;
+    }
+    
+    return this.databases.updateFloatAttribute(params);
+  }
+
+  /**
+   * Update a boolean attribute
+   */
+  async updateBooleanAttribute(
+    databaseId: string,
+    collectionId: string,
+    key: string,
+    required: boolean,
+    defaultValue?: boolean | null
+  ): Promise<any> {
+    const params: any = { databaseId, collectionId, key, required };
+    if (required) {
+      params.xdefault = null;
+    } else {
+      params.xdefault = defaultValue !== null && defaultValue !== undefined ? defaultValue : null;
+    }
+    return this.databases.updateBooleanAttribute(params);
+  }
+
+  /**
+   * Update a datetime attribute
+   */
+  async updateDatetimeAttribute(
+    databaseId: string,
+    collectionId: string,
+    key: string,
+    required: boolean,
+    defaultValue?: string | null
+  ): Promise<any> {
+    const params: any = { databaseId, collectionId, key, required };
+    if (required) {
+      params.xdefault = null;
+    } else {
+      params.xdefault = defaultValue !== null && defaultValue !== undefined ? defaultValue : null;
+    }
+    return this.databases.updateDatetimeAttribute(params);
+  }
+
+  /**
+   * Update an enum attribute
+   */
+  async updateEnumAttribute(
+    databaseId: string,
+    collectionId: string,
+    key: string,
+    elements: string[],
+    required: boolean,
+    defaultValue?: string | null
+  ): Promise<any> {
+    const params: any = { databaseId, collectionId, key, elements, required };
+    if (required) {
+      params.xdefault = null;
+    } else {
+      params.xdefault = defaultValue !== null && defaultValue !== undefined ? defaultValue : null;
+    }
+    return this.databases.updateEnumAttribute(params);
+  }
 }
 
 /**
