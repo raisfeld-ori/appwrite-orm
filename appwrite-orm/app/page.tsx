@@ -43,9 +43,7 @@ export default function Home() {
   ];
 
   const futurePlans = [
-    "Better error handling",
-    "Make the code battle ready for production",
-    "Final release (1.0)"
+    "No more future plans! Project is complete."
   ];
 
   const codeExample = `import { ServerORM } from 'appwrite-orm/server';
